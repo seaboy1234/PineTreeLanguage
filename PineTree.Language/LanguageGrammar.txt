@@ -1,0 +1,133 @@
+﻿# #                      # #
+# PineTree Lexical Grammar #
+# ======================== #
+# #                      # #
+
+EOF := ASCII NULL (* \0 *) ;
+
+letter := "a" .. "z" | "A" .. "Z" ;
+digit := "0" .. "9" ;
+hexDigit := ( "0" .. "9" ) | ("a" .. "f") | ("A" .. "F") ;
+octalDigit := "0" .. "7" ;
+
+lineComment := "//", { any character - "\n" }, "\n" ;
+blockComment := "/*", { any character }, "*/" ;
+
+identifier := ( letter | "_" ), { letter | digit | "_" } ;
+
+stringLiteral := '"', { any character | escapeSequence - '"' }, '"' ;
+
+escapeSequence := "\", ( "r" | "n" | '"' | "t" | "v" ) ;
+
+decimalNumber := [ "-" ], digit, { digit } ;
+hexNumber := [ "-" ], "0x", hexDigit, { hexDigit } ;
+octalNumber := [ "-" ], "0c", octalDigit, { octalDigit } ;
+
+floatingPointNumber := decimalNumber, ( ".", decimalNumber, "f" ) | "f" ; 
+
+binaryOperator := "||" | "&&" | "==" | "!=" 
+				| ">=" | "<=" | "+=" | "-=" 
+				| "*=" | "/=" | "<"  | ">"
+				| "="  | "+"  | "-"  | "*" 
+				| "/"  | "^"  | "%"  | "&" 
+				| "|" ;
+unaryOperator := "!" | "++" | "--" ;
+
+reservedKeyword := "if"        | "else"   | "while" 
+				 | "for"       | "while"  | "class" 
+				 | "var"       | "void"   | "is" 
+				 | "import"    | "true"   | "false" 
+				 | "null"      | "public" | "private"
+				 | "protected" | "static" | "new" ;
+
+# #                     # #
+# PineTree Parser Grammar #
+# ======================= #
+# #                     # #
+
+start := { importStatement | ( [ visibility ], ( class | method ) ) } ;
+
+class := "class", identifier, [ "extends", identifier ], "{", { classMember }, "}"
+classMember := [ visibility ], [ "static" ], ( field | property | constructor | method ) ;
+
+field := identifier, identifier, ["=", expression], ";" ;
+property := identifier, identifier, "{", ( "get" | "set" ), lexicalScope, [ ( "get" | "set" ), lexicalScope ], "}" ;
+constructor := identifier, argumentList, lexicalScope ;
+method := ( identifier | "void" ), identifier, argumentList, lexicalScope ;
+
+visibility := "public" | "protected" | "private" ;
+
+argumentList := "(", [ { variableDeclaration, "," }, variableDeclaration ], ")" ;
+
+# #
+# Statements
+# # # # # # #
+
+statement := blockStatement |  ( variableDeclaration | returnStatement | expression, ";" ) ;
+
+blockStatement := ifStatement | whileStatement | forStatement | lexicalScope ;
+
+importStatement := "import", { any character -";" }, ";" ;
+ifStatement := "if", predicate, lexicalScopeOrStatement, [ elseStatement ] ;
+elseStatement := "else", lexicalScopeOrStatement ;
+whileStatement := "while", predicate, lexicalScopeOrStatement ;
+forStatement := "for", "(", ( variableDeclaration | expression ), ";", level2Expression, ";", expression, ")", lexicalScopeOrStatement ;
+returnStatement := "return", expression ;
+
+variableDeclaration := ( identifier | "var" ), identifier, [ "=", expression ] ;
+
+lexicalScopeOrStatement := lexicalScope | statement ;
+lexicalScope := "{", { statement }, "}" ;
+predicate := "(", level2Expression, ")" ;
+
+lambda := lambdaParameters, "=>", lambdaBody ;
+lambdaParameters := ( "(", [ { variableDeclaration, "," }, variableDeclaration ], ")" )
+				  | ( "(", [ { "," identifier, "," } ], identifier,  ")" ) 
+				  | identifier 
+				  | "()" ;
+
+lambdaBody := expression | lexicalScope ;
+
+# #
+# Expressions
+# # # # # # #
+
+expressionTerminal := identifier
+					| number
+					| "true"
+					| "false"
+					| "null"
+					| methodCall
+					| newCall
+					| objectReference ;
+
+methodCall := identifier, "(", [ { expression, "," }, expression ], ")" ;
+newCall := "new", methodCall ;
+
+objectReference := ( identifier | basicOperation | methodCall | newCall ), { ".", ( identifier | methodCall ) } ;
+
+number := decimalNumber | hexNumber | octalNumber | floatingPointNumber;
+
+# #
+# Expression Grouping
+# # # # # # # # # # #
+
+basicOperation := "(", expression, ")" ;
+unaryOperation := unaryOperator, ( expressionTerminal | basicOperation )
+				| ( expressionTerminal | basicOperation ), unaryOperator ;
+expression := level1Expression;
+
+# #
+# Operator Precedence
+# # # # # # # # # # #
+
+level1Expression := level2Expression, [ ( "="  | "+="  "-="| "*=" | "/=" ), level1Expression ] ;        # Assignment Operators
+level2Expression := level3Expression, [ ( "&&" | "||" ), level2Expression ] ;                           # Grouping Boolean Operators
+level3Expression := level4Expression, [ ( "==" | "!=" | ">" | "<" | ">=" | "<= "), level3Expression ] ; # Equality Operators
+level4Expression := level5Expression, [ ( "+"  | "-"  ), level4Expression ] ;                           # Addition and Subtraction
+level5Expression := level6Expression, [ ( "*"  | "/"  ), level5Expression ] ;                           # Multiplication and Division
+level6Expression := level7Expression, [ ( "%"         ), level6Expression ] ;                           # Modulo Operator
+level7Expression := level8Expression, [ ( "^"  | "&" | "|" ), level7Expression ] ;                      # Bitwise Operators
+level8Expression := expressionTerminal                                                                  # Terminal Statement
+				  | basicOperation
+				  | unaryOperation

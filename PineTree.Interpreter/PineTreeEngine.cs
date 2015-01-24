@@ -1,0 +1,238 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using PineTree.Interpreter.Extensions;
+using PineTree.Interpreter.Interop;
+using PineTree.Interpreter.Native;
+using PineTree.Interpreter.Native.Boolean;
+using PineTree.Interpreter.Native.Class;
+using PineTree.Interpreter.Native.Float;
+using PineTree.Interpreter.Native.Integer;
+using PineTree.Interpreter.Native.String;
+using PineTree.Interpreter.Runtime;
+using PineTree.Interpreter.Runtime.Environment;
+using PineTree.Language.Parser;
+using PineTree.Language.Syntax;
+
+namespace PineTree.Interpreter
+{
+    public class PineTreeEngine
+    {
+        private static TypeRepository _TypeRepository;
+        private Stack<PineTreeEnvironment> _callStack;
+        private Module _currentModule;
+        private ExpressionInterpreter _expressionInterpreter;
+        private PineTreeParser _parser;
+        private StatementInterpreter _statementInterpreter;
+
+        public PineTreeEnvironment ExecutionContext => _callStack.Peek();
+
+        static PineTreeEngine()
+        {
+            _TypeRepository = new TypeRepository();
+        }
+
+        public PineTreeEngine()
+        {
+            _parser = new PineTreeParser();
+            _expressionInterpreter = new ExpressionInterpreter(this);
+            _statementInterpreter = new StatementInterpreter(this);
+            _callStack = new Stack<PineTreeEnvironment>();
+            _callStack.Push(new ExecutionContext(CreateDynamicModule()));
+        }
+
+        public Completion Evaluate(SyntaxNode syntaxNode)
+        {
+            if (syntaxNode == null)
+            {
+                return null;
+            }
+            if (syntaxNode is Statement)
+            {
+                return _statementInterpreter.Evaluate(syntaxNode.As<Statement>());
+            }
+            else if (syntaxNode is Expression)
+            {
+                return new Completion(false, _expressionInterpreter.EvaluateExpression(syntaxNode.As<Expression>()));
+            }
+            else if (syntaxNode is ClassDeclaration)
+            {
+                _TypeRepository.DefineType(new ClassMetadata(this, syntaxNode.As<ClassDeclaration>()));
+
+                return new Completion(true, new RuntimeValue(new StringInstance(this, "class")));
+            }
+            else if (syntaxNode is LexicalScope)
+            {
+                Completion last = null;
+                bool flag = false;
+                if (ExecutionContext is FunctionCallContext)
+                {
+                    flag = true;
+                    ((FunctionCallContext)ExecutionContext).PushScope();
+                }
+                else
+                {
+                    _callStack.Push(new LexicalEnvrionment(ExecutionContext));
+                }
+
+                foreach (var node in syntaxNode.As<LexicalScope>().Statements)
+                {
+                    last = Evaluate(node);
+                    if (last.ShouldReturn)
+                    {
+                        break;
+                    }
+                }
+
+                if (flag)
+                {
+                    ((FunctionCallContext)ExecutionContext).PopScope();
+                }
+                else
+                {
+                    _callStack.Pop();
+                }
+
+                return last;
+            }
+            else if (syntaxNode is SourceDocument)
+            {
+                Completion last = null;
+
+                foreach (var node in syntaxNode.As<SourceDocument>().Contents)
+                {
+                    last = Evaluate(node);
+                }
+
+                return last;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public RuntimeValue Execute(string sourceCode)
+        {
+            return Evaluate(_parser.ParseScript(sourceCode)).Value;
+        }
+
+        public ObjectReference GetReference(string name)
+        {
+            return ExecutionContext.GetReference(name);
+        }
+
+        public RuntimeValue GetValue(string name)
+        {
+            return ExecutionContext.GetLocal(name);
+        }
+
+        public bool IsDefined(string name)
+        {
+            return ExecutionContext.IsDefined(name);
+        }
+
+        public void SetValue(string name, object value)
+        {
+            RuntimeValue runtimeValue;
+            if (value is Delegate)
+            {
+                runtimeValue = new RuntimeValue(new ExternalMethod(this, (Delegate)value));
+            }
+            else
+            {
+                runtimeValue = CastObject(value);
+            }
+
+            ExecutionContext.SetLocal(name, runtimeValue);
+        }
+
+        public void SetValue(string name, RuntimeValue value)
+        {
+            ExecutionContext.SetLocal(name, value);
+        }
+
+        internal RuntimeValue CastObject(object obj)
+        {
+            RuntimeObject value = null;
+            if (obj is RuntimeValue)
+            {
+                return (RuntimeValue)obj;
+            }
+            else if (obj is RuntimeObject)
+            {
+                return new RuntimeValue(obj as RuntimeObject);
+            }
+            else if (obj is string)
+            {
+                value = new StringInstance(this, (string)obj);
+            }
+            else if (obj is int || obj is short || obj is sbyte || obj is long)
+            {
+                value = new IntegerInstance(this, (int)obj);
+            }
+            else if (obj is float || obj is double)
+            {
+                value = new FloatInstance(this, (double)obj);
+            }
+            else if (obj is bool)
+            {
+                value = new BooleanInstance(this, (bool)obj);
+            }
+            else
+            {
+                value = new ClrObjectInstance(this, obj);
+            }
+
+            return new RuntimeValue(value);
+        }
+
+        internal void CreateExecutionContext(RuntimeValue thisBinding)
+        {
+            _callStack.Push(new FunctionCallContext(thisBinding.Value));
+        }
+
+        internal ICallable FindLocalMethod(string name, TypeMetadata[] types)
+        {
+            var local = ExecutionContext.GetLocal(name).Value;
+            if (local != null && local is ICallable && (((ICallable)local)?.ArgumentsMatch(types) ?? false))
+            {
+                return (ICallable)local;
+            }
+            return _currentModule.FindMethod(name, types);
+        }
+
+        internal TypeMetadata FindType(string name)
+        {
+            return _TypeRepository.FindType(name);
+        }
+
+        internal TypeMetadata FindType(RuntimeValue value)
+        {
+            return FindType(value.TypeName);
+        }
+
+        internal void PopExecutionContext()
+        {
+            _callStack.Pop();
+        }
+
+        internal TypeMetadata ResolveType(string name)
+        {
+            return _TypeRepository.FindType(name);
+        }
+
+        internal void SwitchContext(PineTreeEnvironment context)
+        {
+            _callStack.Push(context);
+        }
+
+        private Module CreateDynamicModule()
+        {
+            _currentModule = new Module();
+            return _currentModule;
+        }
+    }
+}

@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineTree", "PineTree\PineTree.csproj", "{F159A8DE-4509-4834-A590-F4ACAC73F661}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineTree.Language", "PineTree.Language\PineTree.Language.csproj", "{917E7CB3-42F8-44BA-8E85-D2CBD9227A41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineTree.Interpreter", "PineTree.Interpreter\PineTree.Interpreter.csproj", "{EF721400-D604-4CA5-919A-F6728077DA84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineTree.DomGenerator", "PineTree.DomGenerator\PineTree.DomGenerator.csproj", "{3578FC28-3260-4032-A960-C38E16393112}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F159A8DE-4509-4834-A590-F4ACAC73F661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F159A8DE-4509-4834-A590-F4ACAC73F661}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F159A8DE-4509-4834-A590-F4ACAC73F661}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F159A8DE-4509-4834-A590-F4ACAC73F661}.Release|Any CPU.Build.0 = Release|Any CPU
+		{917E7CB3-42F8-44BA-8E85-D2CBD9227A41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{917E7CB3-42F8-44BA-8E85-D2CBD9227A41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{917E7CB3-42F8-44BA-8E85-D2CBD9227A41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{917E7CB3-42F8-44BA-8E85-D2CBD9227A41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF721400-D604-4CA5-919A-F6728077DA84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF721400-D604-4CA5-919A-F6728077DA84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF721400-D604-4CA5-919A-F6728077DA84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF721400-D604-4CA5-919A-F6728077DA84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3578FC28-3260-4032-A960-C38E16393112}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3578FC28-3260-4032-A960-C38E16393112}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3578FC28-3260-4032-A960-C38E16393112}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3578FC28-3260-4032-A960-C38E16393112}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
