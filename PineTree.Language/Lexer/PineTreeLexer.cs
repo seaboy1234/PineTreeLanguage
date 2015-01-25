@@ -44,7 +44,6 @@ namespace PineTree.Language.Lexer
         private int _index;
         private int _lineIndex;
         private int _lineNumber;
-
         private string _source;
         private Position _start;
 
@@ -694,6 +693,10 @@ namespace PineTree.Language.Lexer
         {
             while (_ch != '"')
             {
+                if (IsEOF())
+                {
+                    throw new LexerException("Unexpected End of File.");
+                }
                 if (_ch == '\\')
                 {
                     _index++;

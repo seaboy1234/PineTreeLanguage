@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lexer\LexerException.cs" />
     <Compile Include="Lexer\PineTreeLexer.cs" />
     <Compile Include="Lexer\StringExtensions.cs" />
     <Compile Include="Parser\PineTreeParser.cs" />
@@ -96,7 +97,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="LanguageGrammar.txt" />
