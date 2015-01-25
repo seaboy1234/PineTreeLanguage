@@ -73,6 +73,11 @@ namespace PineTree.Interpreter.Runtime
             return Value?.ToString() ?? "null";
         }
 
+        internal RuntimeValue AccessArrayIndex(RuntimeValue value)
+        {
+            return Value?.AccessArray(value) ?? Null;
+        }
+
         internal RuntimeValue EvaluateArithmetic(RuntimeValue right, ArithmeticOperator operation)
         {
             return Value?.EvaluateArithmetic(right, operation) ?? Null;
@@ -96,6 +101,11 @@ namespace PineTree.Interpreter.Runtime
         internal bool HasProperty(string name)
         {
             return Value?.HasProperty(name) ?? false;
+        }
+
+        internal void SetArrayIndex(RuntimeValue index, RuntimeValue value)
+        {
+            Value?.SetArrayValue(index, value);
         }
 
         internal void SetValue(string identifier, RuntimeValue value)

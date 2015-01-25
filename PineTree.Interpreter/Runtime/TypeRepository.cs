@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PineTree.Interpreter.Native.Array;
 using PineTree.Interpreter.Native.Boolean;
 using PineTree.Interpreter.Native.Float;
 using PineTree.Interpreter.Native.Function;
@@ -26,6 +27,7 @@ namespace PineTree.Interpreter.Runtime
                 new IntegerType(),
                 new StringType(),
                 new LamdaArgumentType(),
+                new ArrayType(),
             };
         }
 

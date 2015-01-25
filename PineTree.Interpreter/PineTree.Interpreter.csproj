@@ -44,6 +44,8 @@
     <Compile Include="Interop\ClrObjectInstance.cs" />
     <Compile Include="Interop\ExternalMethod.cs" />
     <Compile Include="Module.cs" />
+    <Compile Include="Native\Array\ArrayInstance.cs" />
+    <Compile Include="Native\Array\ArrayType.cs" />
     <Compile Include="Native\Boolean\BooleanInstance.cs" />
     <Compile Include="Native\Boolean\BooleanType.cs" />
     <Compile Include="Native\Class\ClassMetadata.cs" />

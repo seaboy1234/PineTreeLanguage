@@ -15,6 +15,8 @@ namespace PineTree.Interpreter.Native.Integer
 
         public override TypeInfo TypeInfo => TypeInfo.Int;
 
+        public long Value => _value;
+
         public IntegerInstance(PineTreeEngine engine, long value)
             : base(engine)
         {

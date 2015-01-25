@@ -51,6 +51,11 @@ namespace PineTree.Interpreter.Runtime
             Engine = engine;
         }
 
+        public virtual RuntimeValue AccessArray(RuntimeValue index)
+        {
+            return RuntimeValue.Null;
+        }
+
         public void BindField(string name, RuntimeValue value)
         {
             _properties.Add(new ObjectReference(name, value));
@@ -117,6 +122,10 @@ namespace PineTree.Interpreter.Runtime
         public virtual ICallable ResolveMethod(string name, TypeMetadata[] types)
         {
             return _methods.Find(g => g.Name == name && g.ArgumentsMatch(types));
+        }
+
+        public virtual void SetArrayValue(RuntimeValue index, RuntimeValue value)
+        {
         }
 
         public abstract object ToClr();

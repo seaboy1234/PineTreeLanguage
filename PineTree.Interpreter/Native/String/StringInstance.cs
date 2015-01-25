@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PineTree.Interpreter.Interop;
+using PineTree.Interpreter.Native.Integer;
 using PineTree.Interpreter.Runtime;
 using PineTree.Language.Syntax;
 
@@ -25,6 +26,18 @@ namespace PineTree.Interpreter.Native.String
         {
             _value = value;
             BindMethod("count", new ExternalMethod(engine, this, new Func<int>(() => _value.Length).Method));
+        }
+
+        public override RuntimeValue AccessArray(RuntimeValue index)
+        {
+            IntegerInstance intdex;
+            if (!(index.Value is IntegerInstance))
+            {
+                return RuntimeValue.Null;
+            }
+            intdex = (IntegerInstance)index.Value;
+
+            return new RuntimeValue(new StringInstance(Engine, _value[(int)intdex.Value].ToString()));
         }
 
         public override bool Equals(object obj)

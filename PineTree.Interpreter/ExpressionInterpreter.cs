@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PineTree.Interpreter.Extensions;
 using PineTree.Interpreter.Native;
+using PineTree.Interpreter.Native.Array;
 using PineTree.Interpreter.Native.Boolean;
 using PineTree.Interpreter.Native.Float;
 using PineTree.Interpreter.Native.Function;
@@ -58,6 +59,12 @@ namespace PineTree.Interpreter
                 case SyntaxTypes.UnaryExpression:
                     return EvaluateUnaryExpression(expression.As<UnaryExpression>());
 
+                case SyntaxTypes.ArrayAccessExpression:
+                    return EvaluateArrayAccess(expression.As<ArrayAccessExpression>());
+
+                case SyntaxTypes.ArrayDeclarationExpression:
+                    return EvaluateArrayDeclaration(expression.As<ArrayDeclarationExpression>());
+
                 default:
                     throw new NotImplementedException();
             }
@@ -71,8 +78,33 @@ namespace PineTree.Interpreter
             return left.EvaluateArithmetic(right, expression.Operation);
         }
 
+        private RuntimeValue EvaluateArrayAccess(ArrayAccessExpression expression, RuntimeValue reference = default(RuntimeValue))
+        {
+            RuntimeValue value;
+            if (reference.Value != null)
+            {
+                value = reference.GetValue(expression.Target);
+            }
+            else
+            {
+                value = _engine.GetValue(expression.Target);
+            }
+
+            return value.AccessArrayIndex(EvaluateExpression(expression.Index));
+        }
+
+        private RuntimeValue EvaluateArrayDeclaration(ArrayDeclarationExpression expression)
+        {
+            var size = ((IntegerInstance)EvaluateExpression(expression.Size).Value).Value;
+            var type = _engine.ResolveType(expression.Type);
+            ArrayInstance instance = new ArrayInstance(_engine, type, (int)size);
+
+            return new RuntimeValue(instance);
+        }
+
         private RuntimeValue EvaluateAssignment(AssignmentExpression expression)
         {
+            ObjectReference reference;
             RuntimeValue value = default(RuntimeValue);
 
             if (expression.Left.SyntaxType == SyntaxTypes.ObjectReferenceExpression)
@@ -92,12 +124,36 @@ namespace PineTree.Interpreter
                     {
                         referenceValue = referenceValue.GetValue(current.As<IdentifierExpression>().Identifier);
                     }
+                    else if (current.SyntaxType == SyntaxTypes.MethodCallExpression)
+                    {
+                        referenceValue = EvaluateMethodCall(current.As<MethodCallExpression>(), referenceValue);
+                    }
+                    else if (current.SyntaxType == SyntaxTypes.ArrayAccessExpression)
+                    {
+                        referenceValue = EvaluateArrayAccess(current.As<ArrayAccessExpression>(), referenceValue);
+                    }
                 }
                 value = EvaluateAssignmentRight(expression);
-                referenceValue.SetValue(expr.Final.As<IdentifierExpression>().Identifier, value);
+                if (expr.Final.SyntaxType == SyntaxTypes.ArrayAccessExpression)
+                {
+                    var array = expr.Final.As<ArrayAccessExpression>();
+                    referenceValue.SetArrayIndex(EvaluateExpression(array.Index), value);
+                }
+                else
+                {
+                    referenceValue.SetValue(expr.Final.As<IdentifierExpression>().Identifier, value);
+                }
                 return value;
             }
-            ObjectReference reference = _engine.GetReference(expression.Left.As<IdentifierExpression>().Identifier);
+            else if (expression.Left.SyntaxType == SyntaxTypes.ArrayAccessExpression)
+            {
+                ArrayAccessExpression expr = expression.Left.As<ArrayAccessExpression>();
+                value = _engine.GetValue(expr.Target);
+                value.SetArrayIndex(EvaluateExpression(expr.Index), EvaluateExpression(expression.Right));
+
+                return value;
+            }
+            reference = _engine.GetReference(expression.Left.As<IdentifierExpression>().Identifier);
 
             if (reference == null)
             {

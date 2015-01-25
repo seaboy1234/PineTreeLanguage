@@ -18,5 +18,6 @@ namespace PineTree.Interpreter.Runtime
 
         Function,
         Object,
+        Array,
     }
 }
