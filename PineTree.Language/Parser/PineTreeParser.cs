@@ -680,11 +680,45 @@ namespace PineTree.Language.Parser
             }
         }
 
+        private Expression ParseArrayAccess(bool inObjectRef = false)
+        {
+            string target = Take(TokenType.Identifier).Value;
+
+            Take(TokenType.OpenArrayAccessor);
+
+            Expression index = ParseExpression();
+
+            Take(TokenType.CloseArrayAccessor);
+
+            var expression = new ArrayAccessExpression(target, index);
+            if (_current == TokenType.Dot && !inObjectRef)
+            {
+                return ParseObjectReferenceExpression(expression);
+            }
+            return expression;
+        }
+
+        private Expression ParseArrayDeclaration(string identifier)
+        {
+            Take(TokenType.OpenArrayAccessor);
+
+            if (_current == TokenType.CloseArrayAccessor)
+            {
+                Take(TokenType.CloseArrayAccessor);
+                return new ArrayDeclarationExpression(identifier, null);
+            }
+            var expression = ParseExpression();
+
+            Take(TokenType.CloseArrayAccessor);
+
+            return new ArrayDeclarationExpression(identifier, expression);
+        }
+
         private Expression ParseBasicOperation()
         {
             Take(TokenType.OpenPara);
 
-            // Explicit declaration
+            // Explicit lambda declaration
             if (_next.Catagory == TokenCatagory.Identifier)
             {
                 List<VariableDeclaration> args = new List<VariableDeclaration>();
@@ -796,6 +830,10 @@ namespace PineTree.Language.Parser
                 if (_next == TokenType.OpenPara)
                 {
                     return ParseMethodCall();
+                }
+                else if (_next == TokenType.OpenArrayAccessor)
+                {
+                    return ParseArrayAccess();
                 }
                 else if (_next == TokenType.FatArrow)
                 {
@@ -1045,6 +1083,10 @@ namespace PineTree.Language.Parser
         {
             TakeKeyword("new");
             string identifier = Take(TokenType.Identifier).Value;
+            if (_current == TokenType.OpenArrayAccessor)
+            {
+                return ParseArrayDeclaration(identifier);
+            }
             Take(TokenType.OpenPara);
 
             List<Expression> arguments = new List<Expression>();
@@ -1111,6 +1153,10 @@ namespace PineTree.Language.Parser
                 if (_next == TokenType.OpenPara)
                 {
                     expression = ParseMethodCall(true);
+                }
+                else if (_next == TokenType.OpenArrayAccessor)
+                {
+                    expression = ParseArrayAccess(true);
                 }
                 else
                 {

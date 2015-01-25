@@ -26,6 +26,8 @@ namespace PineTree.Language.Syntax
         IdentifierExpression,
 
         MethodCallExpression,
+        ArrayAccessExpression,
+        ArrayDeclarationExpression,
         NewExpression,
 
         ObjectReferenceExpression,
