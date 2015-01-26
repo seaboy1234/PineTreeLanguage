@@ -928,17 +928,11 @@ namespace PineTree.Language.Parser
         {
             Expression left = ParseLevel5Expression();
 
-            // There may be more than one addition: 1 + 1 + 1 - 3 should be evaluated as (((1 + 1) + 1) - 3)
-            while (_current == TokenType.Addition)
+            // 10 - 3 + 2 should be parsed as ((10 - 3) + 2)
+            while (_current == TokenType.Addition || _current == TokenType.Subtract)
             {
                 var op = ParseArithmeticOperator();
                 left = new ArithmeticExpression(left, ParseLevel5Expression(), op);
-            }
-            if (_current == TokenType.Subtract)
-            {
-                var op = ParseArithmeticOperator();
-                var right = ParseLevel4Expression();
-                return new ArithmeticExpression(left, right, op);
             }
             return left;
         }
@@ -947,17 +941,10 @@ namespace PineTree.Language.Parser
         {
             Expression left = ParseLevel6Expression();
 
-            // There may be more than one multiplication: 2 * 3 * 6 / 4  and should be evaluated left to right.
-            while (_current == TokenType.Multiply)
+            while (_current == TokenType.Multiply || _current == TokenType.Divide)
             {
                 var op = ParseArithmeticOperator();
                 left = new ArithmeticExpression(left, ParseLevel6Expression(), op);
-            }
-            if (_current == TokenType.Divide)
-            {
-                var op = ParseArithmeticOperator();
-                var right = ParseLevel5Expression();
-                return new ArithmeticExpression(left, right, op);
             }
 
             return left;
