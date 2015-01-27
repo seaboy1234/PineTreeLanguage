@@ -47,6 +47,9 @@ namespace PineTree.Language.Lexer
         private string _source;
         private Position _start;
 
+        /// <summary>
+        /// Gets the size of the currently loaded Source Code.
+        /// </summary>
         public int Size => _source.Length;
 
         private char _ch => _source.CharAt(_index);
@@ -55,21 +58,38 @@ namespace PineTree.Language.Lexer
 
         private char _next => _source.CharAt(_index + 1);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PineTreeLexer"/> with the given source code.
+        /// </summary>
+        /// <param name="sourceCode"></param>
         public PineTreeLexer(string sourceCode)
         {
             Reset(sourceCode);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PineTreeLexer"/> with no source code.
+        /// </summary>
         public PineTreeLexer()
             : this(string.Empty)
         {
         }
 
+        /// <summary>
+        /// Clears the current source code regardless of the progress of the lexing process.
+        /// </summary>
         public void Clear()
         {
             _source = string.Empty;
         }
 
+        /// <summary>
+        /// Feeds new source code into this <see cref="PineTreeLexer"/>.
+        /// </summary>
+        /// <remarks>
+        /// If the lexer has reached the end of file, the cached source code will be removed.
+        /// </remarks>
+        /// <param name="sourceCode"></param>
         public void Feed(string sourceCode)
         {
             if (IsEOF())
@@ -82,11 +102,15 @@ namespace PineTree.Language.Lexer
             }
         }
 
+        /// <summary>
+        /// Lexes the entire contents of the source code.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{Token}"/> which represents the contents of the provided source code.</returns>
         public IEnumerable<Token> Lex()
         {
-            Token last = null;
+            Token last;
 
-            while (last?.Type != TokenType.EOF)
+            do
             {
                 last = LexSingleToken();
                 if (last.Type == TokenType.NewLine)
@@ -96,14 +120,27 @@ namespace PineTree.Language.Lexer
                 }
                 yield return last;
             }
+            while (last.Type != TokenType.EOF);
         }
 
+        /// <summary>
+        /// Replaces the current source code and lexes the contents.
+        /// </summary>
+        /// <seealso cref="Lex"/>
+        /// <param name="sourceCode"></param>
+        /// <returns></returns>
         public IEnumerable<Token> Lex(string sourceCode)
         {
             Reset(sourceCode);
             return Lex();
         }
 
+        /// <summary>
+        /// Lexes one token and checks it against the provided <see cref="Predicate{Token}"/>.  If the predicate returns <c>false</c>,
+        /// the lexer will continue to lex until the predicate returns true.
+        /// </summary>
+        /// <param name="predicate">A <see cref="Predicate{Token}"/> that defines the conditions for a token to be returned.</param>
+        /// <returns>The first token that matches <paramref name="predicate"/>.</returns>
         public Token LexToken(Predicate<Token> predicate)
         {
             if (IsEOF())
@@ -120,6 +157,13 @@ namespace PineTree.Language.Lexer
             return token;
         }
 
+        /// <summary>
+        /// Peeks ahead a given number of tokens that match a given <see cref="Predicate{Token}"/>.
+        /// </summary>
+        /// <param name="ahead">The number of tokens to look ahead.</param>
+        /// <param name="predicate">The predicate that defines the conditions for a token.</param>
+        /// <returns>The token which is at the given index and matches the predicate.</returns>
+        /// <seealso cref="PeekUntil(Predicate{Token})"/>
         public Token PeekToken(int ahead, Predicate<Token> predicate)
         {
             int index = _index;
@@ -140,6 +184,11 @@ namespace PineTree.Language.Lexer
             return token;
         }
 
+        /// <summary>
+        /// Peeks ahead until a token that meets the given condition is found or the end of file is reached.
+        /// </summary>
+        /// <param name="predicate">The predicate that defines the conditions for a valid token.</param>
+        /// <returns>An <see cref="IEnumerable{Token}"/> which represents the tokens that will be lexed which meet the given conditions.</returns>
         public IEnumerable<Token> PeekUntil(Predicate<Token> predicate)
         {
             int index = _index;
@@ -167,6 +216,10 @@ namespace PineTree.Language.Lexer
             return tokens.AsReadOnly();
         }
 
+        /// <summary>
+        /// Overwrites the current source code and resets all of the index pointers.
+        /// </summary>
+        /// <param name="sourceCode"></param>
         public void Reset(string sourceCode)
         {
             _source = sourceCode;

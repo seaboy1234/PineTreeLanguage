@@ -3,6 +3,9 @@ using System.Runtime.Serialization;
 
 namespace PineTree.Language.Parser
 {
+    /// <summary>
+    /// Represents a Syntax Error.
+    /// </summary>
     [Serializable]
     public class SyntaxException : Exception
     {

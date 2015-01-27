@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PineTree.Language.Lexer
 {
+    /// <summary>
+    /// Represents an exception raised from the <see cref="PineTreeLexer"/>.
+    /// </summary>
     [Serializable]
     public class LexerException : Exception
     {

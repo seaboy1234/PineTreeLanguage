@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PineTree.Language
 {
+    /// <summary>
+    /// Represents a span of text in a source file.
+    /// </summary>
     public struct TextSpan
     {
         public int Length;

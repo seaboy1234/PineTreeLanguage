@@ -17,18 +17,31 @@ namespace PineTree.Language.Parser
 
         private Token _next;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PineTreeParser"/> class.
+        /// </summary>
         public PineTreeParser()
             : this(new PineTreeLexer())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PineTreeParser"/> class with a given <see cref="PineTreeLexer"/>.
+        /// </summary>
+        /// <param name="lexer"></param>
         public PineTreeParser(PineTreeLexer lexer)
         {
             _lexer = lexer;
             _enforceSemi = true;
         }
 
-        public SyntaxNode Parse()
+        /// <summary>
+        /// Parses all of the given source code and returns a <see cref="SourceDocument"/> containing the created Abstract Syntax Tree.
+        /// Root members of the file must be classes or methods and semicolons are enforced.
+        /// </summary>
+        /// <seealso cref="Parse(string)"/>
+        /// <returns></returns>
+        public SourceDocument Parse()
         {
             InitializeTokens(true);
             List<SyntaxNode> nodes = new List<SyntaxNode>();
@@ -49,7 +62,14 @@ namespace PineTree.Language.Parser
             return new SourceDocument(nodes);
         }
 
-        public SyntaxNode Parse(string source)
+        /// <summary>
+        /// Parses all of the given source code and returns a <see cref="SourceDocument"/> containing the created Abstract Syntax Tree.
+        /// Root members of the file must be classes or methods and semicolons are enforced.
+        /// </summary>
+        /// <param name="source">The file to parse.</param>
+        /// <seealso cref="Parse"/>
+        /// <returns></returns>
+        public SourceDocument Parse(string source)
         {
             _lexer.Feed(source);
             try
@@ -63,6 +83,12 @@ namespace PineTree.Language.Parser
             }
         }
 
+        /// <summary>
+        /// Parses an <see cref="Expression"/> and returns an AST object containing the contents.
+        /// Semicolons are not enforced.
+        /// </summary>
+        /// <param name="source">The expression to parse.</param>
+        /// <returns></returns>
         public Expression ParseExpression(string source)
         {
             _lexer.Feed(source);
@@ -78,6 +104,12 @@ namespace PineTree.Language.Parser
             }
         }
 
+        /// <summary>
+        /// Parses all of the given source code and returns a <see cref="SourceDocument"/> containing the created Abstract Syntax Tree.
+        /// Root members of the file may be classes, methods, or statements.  Semicolons are not enforced.
+        /// </summary>
+        /// <param name="source">The source code to parse.</param>
+        /// <returns></returns>
         public SourceDocument ParseScript(string source)
         {
             _lexer.Feed(source);
@@ -111,6 +143,12 @@ namespace PineTree.Language.Parser
             return new SourceDocument(nodes);
         }
 
+        /// <summary>
+        /// Parses a single statement and returns the created Abstract Syntax Tree.
+        /// Semicolons are not enforced.
+        /// </summary>
+        /// <param name="source">The source code to parse.</param>
+        /// <returns></returns>
         public SyntaxNode ParseStatement(string source)
         {
             _lexer.Feed(source);

@@ -1,5 +1,8 @@
 ﻿namespace PineTree.Language
 {
+    /// <summary>
+    /// Represents a position in a source file.
+    /// </summary>
     public struct Position
     {
         public int FileIndex;

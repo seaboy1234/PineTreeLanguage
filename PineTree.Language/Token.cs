@@ -6,38 +6,76 @@ using System.Threading.Tasks;
 
 namespace PineTree.Language
 {
+    /// <summary>
+    /// Represents a token created in a source file.
+    /// </summary>
     public class Token : IEquatable<TokenType>, IEquatable<string>
     {
         private Lazy<TokenCatagory> _catagory;
         private TextSpan _span;
 
+        /// <summary>
+        /// Gets the <see cref="TokenCatagory"/> of this <see cref="Token"/>.
+        /// </summary>
         public TokenCatagory Catagory => _catagory.Value;
 
+        /// <summary>
+        /// Gets the end <see cref="Position"/> of this <see cref="Token"/>.
+        /// </summary>
         public Position End { get; }
 
+        /// <summary>
+        /// Gets the span of this <see cref="Token"/>.
+        /// </summary>
         public TextSpan Span => _span;
 
+        /// <summary>
+        /// Gets the starting <see cref="Position"/> of this <see cref="Token"/>.
+        /// </summary>
         public Position Start { get; }
 
+        /// <summary>
+        /// Gets the <see cref="TokenType"/> that this <see cref="Token"/> represents.
+        /// </summary>
         public TokenType Type { get; }
 
+        /// <summary>
+        /// Gets the textual representation of this <see cref="Token"/>.
+        /// </summary>
         public string Value { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Token"/> class with the given value and <see cref="TokenType"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="type"></param>
         public Token(string value, TokenType type)
         {
             Value = value;
             Type = type;
+            _catagory = new Lazy<TokenCatagory>(() => GetCatagory(type));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Token"/> class with the given value, <see cref="TokenType"/>, starting position, and ending position.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="type"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
         public Token(string value, TokenType type, Position start, Position end)
             : this(value, type)
         {
             Start = start;
             End = end;
-            _catagory = new Lazy<TokenCatagory>(() => GetCatagory(type));
             _span = new TextSpan(start, end);
         }
 
+        /// <summary>
+        /// Gets the <see cref="TokenCatagory"/> of a given <see cref="TokenType"/>.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static TokenCatagory GetCatagory(TokenType type)
         {
             switch (type)
@@ -107,22 +145,22 @@ namespace PineTree.Language
             }
         }
 
+        /// <summary>
+        /// Gets whether this <see cref="Token"/> represents an invalid value.
+        /// </summary>
+        /// <returns></returns>
         public bool IsInvalid()
         {
             return Type == TokenType.Invalid;
         }
 
+        /// <summary>
+        /// Gets a <see cref="bool"/> representing whether this <see cref="Token"/> represents a type of trivia.
+        /// </summary>
+        /// <returns></returns>
         public bool IsTrivia()
         {
-            switch (Type)
-            {
-                case TokenType.WhiteSpace:
-                case TokenType.Comment:
-                case TokenType.NewLine:
-                    return true;
-
-                default: return false;
-            }
+            return Catagory == TokenCatagory.Trivia;
         }
 
         #region Equality Operations
