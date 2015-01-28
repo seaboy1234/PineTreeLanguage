@@ -53,10 +53,12 @@ namespace PineTree.Interpreter.Runtime.Environment
             _scope.Pop();
         }
 
-        public void PushScope()
+        public LexicalEnvironment PushScope()
         {
             PineTreeEnvironment scope = _scope.Count > 0 ? _scope.Peek() : this;
-            PushScope(new LexicalEnvrionment(scope));
+            var env = new LexicalEnvironment(scope);
+            PushScope(env);
+            return env;
         }
 
         public override void SetLocal(string name, RuntimeValue value)

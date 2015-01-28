@@ -113,6 +113,7 @@ number := decimalNumber | hexNumber | octalNumber | floatingPointNumber;
 # # # # # # # # # # #
 
 basicOperation := "(", expression, ")" ;
+compoundOperation := "(", expression, { ";", expression }, ")" ;
 unaryOperation := unaryOperator, ( expressionTerminal | basicOperation )
 				| ( expressionTerminal | basicOperation ), unaryOperator ;
 expression := level1Expression;
@@ -130,4 +131,5 @@ level6Expression := level7Expression, [ ( "%"         ), level6Expression ] ;   
 level7Expression := level8Expression, [ ( "^"  | "&" | "|" ), level7Expression ] ;                      # Bitwise Operators
 level8Expression := expressionTerminal                                                                  # Terminal Statement
 				  | basicOperation
+				  | compoundOperation
 				  | unaryOperation

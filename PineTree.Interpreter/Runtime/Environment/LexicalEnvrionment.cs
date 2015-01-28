@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace PineTree.Interpreter.Runtime.Environment
 {
-    public class LexicalEnvrionment : PineTreeEnvironment
+    public class LexicalEnvironment : PineTreeEnvironment
     {
         private PineTreeEnvironment _parent;
 
-        public LexicalEnvrionment(PineTreeEnvironment parent)
+        public LexicalEnvironment(PineTreeEnvironment parent)
         {
             _parent = parent;
         }
 
         public override PineTreeEnvironment Clone()
         {
-            var env = new LexicalEnvrionment(_parent.Clone());
+            var env = new LexicalEnvironment(_parent.Clone());
             foreach (var reference in GetReferences())
             {
                 env.SetLocal(reference.ReferenceName, reference.Value);
@@ -34,6 +34,11 @@ namespace PineTree.Interpreter.Runtime.Environment
                 return value;
             }
             return _parent?.GetLocal(name) ?? RuntimeValue.Null;
+        }
+
+        public override ObjectReference GetReference(string name)
+        {
+            return base.GetReference(name) ?? _parent?.GetReference(name);
         }
     }
 }

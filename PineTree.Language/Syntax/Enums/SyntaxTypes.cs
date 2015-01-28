@@ -11,6 +11,7 @@ namespace PineTree.Language.Syntax
         #region Expressions
 
         LambdaExpression,
+        CompoundExpression,
 
         // Binary Expressions
         ArithmeticExpression,

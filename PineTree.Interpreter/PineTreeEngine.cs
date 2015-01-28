@@ -66,16 +66,7 @@ namespace PineTree.Interpreter
             else if (syntaxNode is LexicalScope)
             {
                 Completion last = null;
-                bool flag = false;
-                if (ExecutionContext is FunctionCallContext)
-                {
-                    flag = true;
-                    ((FunctionCallContext)ExecutionContext).PushScope();
-                }
-                else
-                {
-                    _callStack.Push(new LexicalEnvrionment(ExecutionContext));
-                }
+                CreateLexicalEnvironment();
 
                 foreach (var node in syntaxNode.As<LexicalScope>().Statements)
                 {
@@ -86,14 +77,7 @@ namespace PineTree.Interpreter
                     }
                 }
 
-                if (flag)
-                {
-                    ((FunctionCallContext)ExecutionContext).PopScope();
-                }
-                else
-                {
-                    _callStack.Pop();
-                }
+                PopLexicalEnvironment();
 
                 return last;
             }
@@ -137,7 +121,11 @@ namespace PineTree.Interpreter
         public void SetValue(string name, object value)
         {
             RuntimeValue runtimeValue;
-            if (value is Delegate)
+            if (value == null)
+            {
+                runtimeValue = RuntimeValue.Null;
+            }
+            else if (value is Delegate)
             {
                 runtimeValue = new RuntimeValue(new ExternalMethod(this, (Delegate)value));
             }
@@ -194,6 +182,22 @@ namespace PineTree.Interpreter
             _callStack.Push(new FunctionCallContext(thisBinding.Value));
         }
 
+        internal LexicalEnvironment CreateLexicalEnvironment()
+        {
+            LexicalEnvironment environment;
+            if (ExecutionContext is FunctionCallContext)
+            {
+                environment = ((FunctionCallContext)ExecutionContext).PushScope();
+            }
+            else
+            {
+                environment = new LexicalEnvironment(ExecutionContext);
+                _callStack.Push(environment);
+            }
+
+            return environment;
+        }
+
         internal ICallable FindLocalMethod(string name, TypeMetadata[] types)
         {
             var local = ExecutionContext.GetLocal(name).Value;
@@ -217,6 +221,18 @@ namespace PineTree.Interpreter
         internal void PopExecutionContext()
         {
             _callStack.Pop();
+        }
+
+        internal void PopLexicalEnvironment()
+        {
+            if (ExecutionContext is FunctionCallContext)
+            {
+                ((FunctionCallContext)ExecutionContext).PopScope();
+            }
+            else
+            {
+                _callStack.Pop();
+            }
         }
 
         internal TypeMetadata ResolveType(string name)

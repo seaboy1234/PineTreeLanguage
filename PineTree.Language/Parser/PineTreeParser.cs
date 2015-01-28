@@ -810,7 +810,10 @@ namespace PineTree.Language.Parser
 
                 return ParseLambdaExpression(expressions.Select(g => new VariableDeclaration(g.Identifier, "var", null)));
             }
-
+            else if (_current == TokenType.Semicolon)
+            {
+                return ParseCompoundExpression(expression);
+            }
             Take(TokenType.ClosePara);
 
             if (_current == TokenType.FatArrow)
@@ -852,6 +855,25 @@ namespace PineTree.Language.Parser
 
                 default: return BitwiseOperator.And;
             }
+        }
+
+        private Expression ParseCompoundExpression(Expression first)
+        {
+            List<Expression> expressions = new List<Expression>();
+            expressions.Add(first);
+
+            while (_current != TokenType.ClosePara)
+            {
+                Take(TokenType.Semicolon);
+
+                var expression = ParseExpression();
+
+                expressions.Add(expression);
+            }
+
+            Take(TokenType.ClosePara);
+
+            return new CompoundExpression(expressions);
         }
 
         private Expression ParseExpression()

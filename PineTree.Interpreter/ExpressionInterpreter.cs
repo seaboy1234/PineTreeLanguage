@@ -12,6 +12,7 @@ using PineTree.Interpreter.Native.Function;
 using PineTree.Interpreter.Native.Integer;
 using PineTree.Interpreter.Native.String;
 using PineTree.Interpreter.Runtime;
+using PineTree.Interpreter.Runtime.Environment;
 using PineTree.Language.Syntax;
 
 namespace PineTree.Interpreter
@@ -65,6 +66,9 @@ namespace PineTree.Interpreter
                 case SyntaxTypes.ArrayDeclarationExpression:
                     return EvaluateArrayDeclaration(expression.As<ArrayDeclarationExpression>());
 
+                case SyntaxTypes.CompoundExpression:
+                    return EvaluateCompound(expression.As<CompoundExpression>());
+
                 default:
                     throw new NotImplementedException();
             }
@@ -102,7 +106,7 @@ namespace PineTree.Interpreter
             return new RuntimeValue(instance);
         }
 
-        private RuntimeValue EvaluateAssignment(AssignmentExpression expression)
+        private RuntimeValue EvaluateAssignment(AssignmentExpression expression, bool implicitDeclarationAllowed = false)
         {
             ObjectReference reference;
             RuntimeValue value = default(RuntimeValue);
@@ -157,7 +161,15 @@ namespace PineTree.Interpreter
 
             if (reference == null)
             {
-                throw new RuntimeException("No object with given path.");
+                if (!implicitDeclarationAllowed)
+                {
+                    throw new RuntimeException("No object with given path.");
+                }
+
+                string name = expression.Left.As<IdentifierExpression>().Identifier;
+
+                _engine.SetValue(name, null);
+                reference = _engine.GetReference(name);
             }
 
             value = EvaluateAssignmentRight(expression);
@@ -194,6 +206,28 @@ namespace PineTree.Interpreter
             }
 
             return value;
+        }
+
+        private RuntimeValue EvaluateCompound(CompoundExpression expression)
+        {
+            LexicalEnvironment env = _engine.CreateLexicalEnvironment();
+            RuntimeValue last = RuntimeValue.Null;
+
+            foreach (var expr in expression.Expressions)
+            {
+                if (expr.SyntaxType == SyntaxTypes.AssignmentExpression)
+                {
+                    last = EvaluateAssignment(expr.As<AssignmentExpression>(), true);
+                }
+                else
+                {
+                    last = EvaluateExpression(expr);
+                }
+            }
+
+            _engine.PopLexicalEnvironment();
+
+            return last;
         }
 
         private RuntimeValue EvaluateConstant(ConstantExpression constant)
