@@ -16,6 +16,8 @@ namespace PineTree.Interpreter.Native.String
 
         public override TypeInfo TypeInfo => TypeInfo.String;
 
+        internal string Value => _value;
+
         public StringInstance(PineTreeEngine engine)
             : this(engine, string.Empty)
         {
