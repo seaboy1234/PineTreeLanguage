@@ -9,6 +9,7 @@ using PineTree.Interpreter.Native;
 using PineTree.Interpreter.Native.Boolean;
 using PineTree.Interpreter.Native.Class;
 using PineTree.Interpreter.Native.Float;
+using PineTree.Interpreter.Native.Function;
 using PineTree.Interpreter.Native.Integer;
 using PineTree.Interpreter.Native.String;
 using PineTree.Interpreter.Runtime;
@@ -62,6 +63,13 @@ namespace PineTree.Interpreter
                 _TypeRepository.DefineType(new ClassMetadata(this, syntaxNode.As<ClassDeclaration>()));
 
                 return new Completion(true, new RuntimeValue(new StringInstance(this, "class")));
+            }
+            else if (syntaxNode is MethodDeclaration)
+            {
+                FunctionInstance func = new FunctionInstance(this, syntaxNode.As<MethodDeclaration>());
+                SetValue(func.Name, func);
+
+                return new Completion(true, new RuntimeValue(func));
             }
             else if (syntaxNode is LexicalScope)
             {
