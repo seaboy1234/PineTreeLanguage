@@ -26,9 +26,12 @@ namespace PineTree.Interpreter
         private Module _currentModule;
         private ExpressionInterpreter _expressionInterpreter;
         private PineTreeParser _parser;
+        private ExecutionContext _rootContext;
         private StatementInterpreter _statementInterpreter;
 
         public PineTreeEnvironment ExecutionContext => _callStack.Peek();
+
+        public PineTreeEnvironment RootContext => _rootContext;
 
         static PineTreeEngine()
         {
@@ -41,7 +44,8 @@ namespace PineTree.Interpreter
             _expressionInterpreter = new ExpressionInterpreter(this);
             _statementInterpreter = new StatementInterpreter(this);
             _callStack = new Stack<PineTreeEnvironment>();
-            _callStack.Push(new ExecutionContext(CreateDynamicModule()));
+            _rootContext = new ExecutionContext(CreateDynamicModule());
+            _callStack.Push(_rootContext);
         }
 
         public Completion Evaluate(SyntaxNode syntaxNode)
@@ -187,7 +191,7 @@ namespace PineTree.Interpreter
 
         internal void CreateExecutionContext(RuntimeValue thisBinding)
         {
-            _callStack.Push(new FunctionCallContext(thisBinding.Value));
+            _callStack.Push(new FunctionCallContext(this, thisBinding.Value));
         }
 
         internal LexicalEnvironment CreateLexicalEnvironment()

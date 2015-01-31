@@ -8,18 +8,20 @@ namespace PineTree.Interpreter.Runtime.Environment
 {
     public class FunctionCallContext : PineTreeEnvironment
     {
+        private PineTreeEngine _engine;
         private Stack<PineTreeEnvironment> _scope;
         private ObjectReference _thisBinding;
 
-        public FunctionCallContext(RuntimeObject thisBinding)
+        public FunctionCallContext(PineTreeEngine engine, RuntimeObject thisBinding)
         {
+            _engine = engine;
             _scope = new Stack<PineTreeEnvironment>();
             _thisBinding = new ObjectReference("this", new RuntimeValue(thisBinding));
         }
 
         public override PineTreeEnvironment Clone()
         {
-            FunctionCallContext context = new FunctionCallContext(_thisBinding.Value.Value);
+            FunctionCallContext context = new FunctionCallContext(_engine, _thisBinding.Value.Value);
 
             foreach (var scope in _scope)
             {
@@ -44,7 +46,7 @@ namespace PineTree.Interpreter.Runtime.Environment
             {
                 return base.GetReference(name) ?? _thisBinding?.Value.GetReference(name);
             }
-            return base.GetReference(name) ?? _scope.Peek().GetReference(name) ?? _thisBinding?.Value.GetReference(name);
+            return base.GetReference(name) ?? _scope.Peek().GetReference(name) ?? _thisBinding?.Value.GetReference(name) ?? _engine.RootContext.GetReference(name);
         }
 
         public void PopScope()
