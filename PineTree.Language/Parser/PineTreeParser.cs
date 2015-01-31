@@ -973,6 +973,20 @@ namespace PineTree.Language.Parser
                     return ParseNewExpression();
                 }
             }
+            else if (_current.Catagory == TokenCatagory.Arithmetic)
+            {
+                if (_current == TokenType.Addition)
+                {
+                    AcceptToken();
+                    return ParseExpression();
+                }
+                else if (_current == TokenType.Subtract)
+                {
+                    Take(TokenType.Subtract);
+                    Expression parameter = ParseExpression();
+                    return new UnaryExpression(parameter, UnaryOperator.Negation, true);
+                }
+            }
             else if (_current.Catagory == TokenCatagory.Literal)
             {
                 if (_current == TokenType.StringLiteral)
