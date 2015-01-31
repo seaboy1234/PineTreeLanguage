@@ -38,7 +38,7 @@ namespace PineTree.Interpreter
                     return EvaluateFor(statement.As<ForStatement>());
 
                 default:
-                    return new Completion(false, RuntimeValue.Null);
+                    throw new NotImplementedException();
             }
         }
 
