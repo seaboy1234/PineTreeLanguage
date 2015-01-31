@@ -14,6 +14,8 @@ namespace PineTree.Interpreter.Native.Float
 
         public override TypeInfo TypeInfo => TypeInfo.Float;
 
+        internal double Value => _value;
+
         public FloatInstance(PineTreeEngine engine, double value)
             : base(engine)
         {
