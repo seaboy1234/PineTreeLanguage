@@ -492,9 +492,17 @@ namespace PineTree.Language.Parser
             }
             IEnumerable<VariableDeclaration> arguments = ParseArgumentList();
 
+            SyntaxNode precondition = null;
+
+            if (_current == "requires")
+            {
+                AcceptToken();
+                precondition = ParseLexicalScopeOrExpression();
+            }
+
             LexicalScope body = ParseLexicalScope();
 
-            return new MethodDeclaration(name, type, visibility, arguments, body);
+            return new MethodDeclaration(name, type, visibility, arguments, body, precondition);
         }
 
         private Expression ParsePredicate()
