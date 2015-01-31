@@ -11,6 +11,8 @@ namespace PineTree.Language.Syntax
 
         public string Name { get; }
 
+        public SyntaxNode Precondition { get; }
+
         public string ReturnType { get; }
 
         public override SyntaxTypes SyntaxType => SyntaxTypes.MethodDeclaration;
@@ -24,6 +26,12 @@ namespace PineTree.Language.Syntax
             Visibility = visibility;
             Arguments = arguments;
             Body = body;
+        }
+
+        public MethodDeclaration(string name, string returnType, Visibility visibility, IEnumerable<VariableDeclaration> arguments, LexicalScope body, SyntaxNode precondition)
+            : this(name, returnType, visibility, arguments, body)
+        {
+            Precondition = precondition;
         }
     }
 }
