@@ -37,6 +37,9 @@ namespace PineTree.Interpreter
                 case SyntaxTypes.ForStatement:
                     return EvaluateFor(statement.As<ForStatement>());
 
+                case SyntaxTypes.ElseStatement:
+                    return EvaluateElse(statement.As<ElseStatement>());
+
                 default:
                     throw new NotImplementedException();
             }
@@ -58,6 +61,11 @@ namespace PineTree.Interpreter
 
             _engine.SetValue(variableDeclaration.Name, value);
             return new Completion(false, value);
+        }
+
+        private Completion EvaluateElse(ElseStatement elseStatement)
+        {
+            return _engine.Evaluate(elseStatement.Body);
         }
 
         private Completion EvaluateFor(ForStatement statement)
