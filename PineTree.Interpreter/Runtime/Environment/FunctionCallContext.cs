@@ -8,7 +8,6 @@ namespace PineTree.Interpreter.Runtime.Environment
 {
     public class FunctionCallContext : PineTreeEnvironment
     {
-        private RuntimeValue _returnValue;
         private Stack<PineTreeEnvironment> _scope;
         private ObjectReference _thisBinding;
 
@@ -45,7 +44,7 @@ namespace PineTree.Interpreter.Runtime.Environment
             {
                 return base.GetReference(name) ?? _thisBinding?.Value.GetReference(name);
             }
-            return _scope.Peek().GetReference(name) ?? _thisBinding?.Value.GetReference(name);
+            return base.GetReference(name) ?? _scope.Peek().GetReference(name) ?? _thisBinding?.Value.GetReference(name);
         }
 
         public void PopScope()

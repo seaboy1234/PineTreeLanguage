@@ -8,6 +8,7 @@ namespace PineTree.Interpreter.Runtime.Environment
 {
     public class LexicalEnvironment : PineTreeEnvironment
     {
+        private bool _gettingReference;
         private PineTreeEnvironment _parent;
 
         public LexicalEnvironment(PineTreeEnvironment parent)
@@ -38,7 +39,14 @@ namespace PineTree.Interpreter.Runtime.Environment
 
         public override ObjectReference GetReference(string name)
         {
-            return base.GetReference(name) ?? _parent?.GetReference(name);
+            if (_gettingReference)
+            {
+                return base.GetReference(name);
+            }
+            _gettingReference = true;
+            ObjectReference reference = base.GetReference(name) ?? _parent?.GetReference(name);
+            _gettingReference = false;
+            return reference;
         }
     }
 }
