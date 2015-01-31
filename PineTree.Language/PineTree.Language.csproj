@@ -73,6 +73,7 @@
     <Compile Include="Syntax\Expression.cs" />
     <Compile Include="Syntax\ExpressionTerminal.cs" />
     <Compile Include="Syntax\FieldDeclaration.cs" />
+    <Compile Include="Syntax\ForStatement.cs" />
     <Compile Include="Syntax\IfStatement.cs" />
     <Compile Include="Syntax\ImportStatement.cs" />
     <Compile Include="Syntax\LambdaDeclarationExpression.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Syntax\VariableDeclaration.cs" />
     <Compile Include="Syntax\IdentifierExpression.cs" />
     <Compile Include="Syntax\Enums\Visibility.cs" />
+    <Compile Include="Syntax\WhileStatement.cs" />
     <Compile Include="TextSpan.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenCatagory.cs" />

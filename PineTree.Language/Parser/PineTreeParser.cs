@@ -367,6 +367,34 @@ namespace PineTree.Language.Parser
             return new ElseStatement(body);
         }
 
+        private ForStatement ParseForStatement()
+        {
+            TakeKeyword("for");
+            Take(TokenType.OpenPara);
+
+            SyntaxNode variable = null;
+
+            if (_current != TokenType.Semicolon)
+            {
+                variable = ParseVariableDeclaration();
+            }
+            else
+            {
+                variable = new EmptyStatement();
+            }
+            Take(TokenType.Semicolon);
+
+            Expression predicate = ParseLevel2Expression();
+            Take(TokenType.Semicolon);
+
+            Expression increment = ParseExpression();
+            Take(TokenType.ClosePara);
+
+            SyntaxNode body = ParseLexicalScopeOrStatement();
+
+            return new ForStatement(variable, predicate, increment, body);
+        }
+
         private IfStatement ParseIfStatement()
         {
             TakeKeyword("if");
@@ -549,6 +577,14 @@ namespace PineTree.Language.Parser
                         node = ParseReturnStatement();
                         break;
 
+                    case "for":
+                        node = ParseForStatement();
+                        break;
+
+                    case "while":
+                        node = ParseWhileStatement();
+                        break;
+
                     default:
                         node = ParseExpressionTerminal();
                         break;
@@ -653,6 +689,16 @@ namespace PineTree.Language.Parser
                 }
             }
             return Visibility.Private;
+        }
+
+        private WhileStatement ParseWhileStatement()
+        {
+            TakeKeyword("while");
+            Expression predicate = ParsePredicate();
+
+            SyntaxNode body = ParseLexicalScopeOrStatement();
+
+            return new WhileStatement(predicate, body);
         }
 
         private Token PeekToken(int ahead)
