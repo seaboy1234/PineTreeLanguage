@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PineTree.Interpreter.Native.Boolean;
 using PineTree.Interpreter.Runtime;
 using PineTree.Language.Syntax;
 
@@ -51,16 +52,34 @@ namespace PineTree.Interpreter.Native.Function
         {
             Engine.CreateExecutionContext(thisBinding);
 
-            foreach (var arg in _methodInfo.Arguments.Zip(args, (g, f) => new { Name = g.Name, Value = f }))
+            try
             {
-                Engine.ExecutionContext.SetLocal(arg.Name, arg.Value);
+                foreach (var arg in _methodInfo.Arguments.Zip(args, (g, f) => new { Name = g.Name, Value = f }))
+                {
+                    Engine.ExecutionContext.SetLocal(arg.Name, arg.Value);
+                }
+
+                if (_methodInfo.Precondition != null)
+                {
+                    var output = Engine.Evaluate(_methodInfo.Precondition);
+                    if (!(output.Value.Value is BooleanInstance))
+                    {
+                        throw new RuntimeException("Preconditions must return a boolean.");
+                    }
+                    if (!((bool)output.Value.ToClr()))
+                    {
+                        throw new RuntimeException("Method Call does not meet preconditions.");
+                    }
+                }
+
+                var obj = Engine.Evaluate(_methodInfo.Body);
+
+                return obj.Value;
             }
-
-            var obj = Engine.Evaluate(_methodInfo.Body);
-
-            Engine.PopExecutionContext();
-
-            return obj.Value;
+            finally
+            {
+                Engine.PopExecutionContext();
+            }
         }
 
         public FunctionInstance SetAlias(string alias)
