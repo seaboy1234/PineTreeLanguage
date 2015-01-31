@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PineTree.Interpreter.Native.Integer;
+using PineTree.Interpreter.Native.String;
 using PineTree.Interpreter.Runtime;
 using PineTree.Language.Syntax;
 
@@ -29,6 +31,36 @@ namespace PineTree.Interpreter.Native.Float
 
         public override RuntimeValue EvaluateArithmetic(RuntimeValue right, ArithmeticOperator op)
         {
+            if (right.Value is StringInstance)
+            {
+                string s = ((StringInstance)right.Value).Value;
+                switch (op)
+                {
+                    case ArithmeticOperator.Add:
+                        return new RuntimeValue(new StringInstance(Engine, s + _value));
+
+                    case ArithmeticOperator.Subtract:
+                        return new RuntimeValue(new StringInstance(Engine, s.Replace(_value.ToString(), string.Empty)));
+                }
+            }
+            else if (right.Value is IntegerInstance)
+            {
+                long i = ((IntegerInstance)right.Value).Value;
+                switch (op)
+                {
+                    case ArithmeticOperator.Add:
+                        return new RuntimeValue(new FloatInstance(Engine, _value + i));
+
+                    case ArithmeticOperator.Subtract:
+                        return new RuntimeValue(new FloatInstance(Engine, _value - i));
+
+                    case ArithmeticOperator.Divide:
+                        return new RuntimeValue(new FloatInstance(Engine, _value / i));
+
+                    case ArithmeticOperator.Multiply:
+                        return new RuntimeValue(new FloatInstance(Engine, _value * i));
+                }
+            }
             switch (op)
             {
                 case ArithmeticOperator.Add:
@@ -62,6 +94,10 @@ namespace PineTree.Interpreter.Native.Float
                 else if (operation == UnaryOperator.Increment)
                 {
                     return new RuntimeValue(new FloatInstance(Engine, ++_value));
+                }
+                else if (operation == UnaryOperator.Negation)
+                {
+                    return new RuntimeValue(new FloatInstance(Engine, -_value));
                 }
             }
             else

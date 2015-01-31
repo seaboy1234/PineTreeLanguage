@@ -14,5 +14,7 @@ namespace PineTree.Language.Syntax
 
         Increment,
         Decrement,
+
+        Negation
     }
 }
