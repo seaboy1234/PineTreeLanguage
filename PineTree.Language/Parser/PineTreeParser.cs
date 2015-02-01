@@ -492,17 +492,30 @@ namespace PineTree.Language.Parser
             }
             IEnumerable<VariableDeclaration> arguments = ParseArgumentList();
 
-            SyntaxNode precondition = null;
+            List<PreconditionStatement> preconditions = new List<PreconditionStatement>();
 
             if (_current == "requires")
             {
-                AcceptToken();
-                precondition = ParseLexicalScopeOrExpression();
+                do
+                {
+                    AcceptToken();
+                    SyntaxNode precondition = ParseLexicalScopeOrExpression();
+                    string message = "Failed Precondition";
+                    if (_current == "error")
+                    {
+                        AcceptToken();
+                        Take(TokenType.Colon);
+                        message = Take(TokenType.StringLiteral).Value;
+                    }
+
+                    preconditions.Add(new PreconditionStatement(precondition, message));
+                }
+                while (_current == "and");
             }
 
             LexicalScope body = ParseLexicalScope();
 
-            return new MethodDeclaration(name, type, visibility, arguments, body, precondition);
+            return new MethodDeclaration(name, type, visibility, arguments, body, preconditions);
         }
 
         private Expression ParsePredicate()

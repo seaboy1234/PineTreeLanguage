@@ -84,6 +84,7 @@
     <Compile Include="Syntax\MethodDeclaration.cs" />
     <Compile Include="Syntax\NewExpression.cs" />
     <Compile Include="Syntax\ObjectReferenceExpression.cs" />
+    <Compile Include="Syntax\PreconditionStatement.cs" />
     <Compile Include="Syntax\PropertyDeclaration.cs" />
     <Compile Include="Syntax\ReturnStatement.cs" />
     <Compile Include="Syntax\SourceDocument.cs" />

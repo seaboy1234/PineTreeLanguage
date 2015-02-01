@@ -59,16 +59,19 @@ namespace PineTree.Interpreter.Native.Function
                     Engine.ExecutionContext.SetLocal(arg.Name, arg.Value);
                 }
 
-                if (_methodInfo.Precondition != null)
+                if (_methodInfo.Preconditions != null)
                 {
-                    var output = Engine.Evaluate(_methodInfo.Precondition);
-                    if (!(output.Value.Value is BooleanInstance))
+                    foreach (var condition in _methodInfo.Preconditions)
                     {
-                        throw new RuntimeException("Preconditions must return a boolean.");
-                    }
-                    if (!((bool)output.Value.ToClr()))
-                    {
-                        throw new RuntimeException("Method Call does not meet preconditions.");
+                        var output = Engine.Evaluate(condition.Condition);
+                        if (!(output.Value.Value is BooleanInstance))
+                        {
+                            throw new RuntimeException("Preconditions must return a boolean.");
+                        }
+                        if (!((bool)output.Value.ToClr()))
+                        {
+                            throw new RuntimeException(condition.ErrorMessage);
+                        }
                     }
                 }
 

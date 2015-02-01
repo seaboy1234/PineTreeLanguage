@@ -11,7 +11,7 @@ namespace PineTree.Language.Syntax
 
         public string Name { get; }
 
-        public SyntaxNode Precondition { get; }
+        public IEnumerable<PreconditionStatement> Preconditions { get; }
 
         public string ReturnType { get; }
 
@@ -28,10 +28,12 @@ namespace PineTree.Language.Syntax
             Body = body;
         }
 
-        public MethodDeclaration(string name, string returnType, Visibility visibility, IEnumerable<VariableDeclaration> arguments, LexicalScope body, SyntaxNode precondition)
+        public MethodDeclaration(string name, string returnType, Visibility visibility,
+                                 IEnumerable<VariableDeclaration> arguments, LexicalScope body,
+                                 IEnumerable<PreconditionStatement> preconditions)
             : this(name, returnType, visibility, arguments, body)
         {
-            Precondition = precondition;
+            Preconditions = preconditions;
         }
     }
 }

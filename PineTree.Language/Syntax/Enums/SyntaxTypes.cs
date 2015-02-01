@@ -46,6 +46,8 @@ namespace PineTree.Language.Syntax
         ReturnStatement,
         ImportStatement,
 
+        PreconditionStatement,
+
         #endregion Statements
 
         #region Declarations
