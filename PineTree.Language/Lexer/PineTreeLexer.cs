@@ -80,7 +80,7 @@ namespace PineTree.Language.Lexer
         /// </summary>
         public void Clear()
         {
-            _source = string.Empty;
+            Reset(string.Empty);
         }
 
         /// <summary>
