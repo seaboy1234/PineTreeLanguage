@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineTree.Interpreter", "Pin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineTree.DomGenerator", "PineTree.DomGenerator\PineTree.DomGenerator.csproj", "{3578FC28-3260-4032-A960-C38E16393112}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineTree.Tests", "PineTree.Tests\PineTree.Tests.csproj", "{CB08A82E-8E75-43FD-BC11-A2F76D94A14A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{3578FC28-3260-4032-A960-C38E16393112}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3578FC28-3260-4032-A960-C38E16393112}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3578FC28-3260-4032-A960-C38E16393112}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB08A82E-8E75-43FD-BC11-A2F76D94A14A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB08A82E-8E75-43FD-BC11-A2F76D94A14A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB08A82E-8E75-43FD-BC11-A2F76D94A14A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB08A82E-8E75-43FD-BC11-A2F76D94A14A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
