@@ -991,7 +991,7 @@ namespace PineTree.Language.Parser
                 else if (_current == TokenType.Subtract)
                 {
                     Take(TokenType.Subtract);
-                    Expression parameter = ParseExpression();
+                    Expression parameter = ParseLevel8Expression();
                     return new UnaryExpression(parameter, UnaryOperator.Negation, true);
                 }
             }
