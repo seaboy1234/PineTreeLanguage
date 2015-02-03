@@ -123,8 +123,7 @@ namespace PineTree.Language.Parser
                     {
                         nodes.Add(ParseImportStatement());
                     }
-                    else if ((PeekToken(1) == TokenType.Identifier && _next.Catagory == TokenCatagory.Identifier)
-                         || (_next == "class" || _current == "class"))
+                    else if (_current == "public" || _current == "private" || _current == "protected" || _current == "class")
                     {
                         nodes.Add(ParseClassOrMethod());
                     }
