@@ -237,6 +237,20 @@ namespace PineTree.Language.Parser
             }
         }
 
+        private CatchStatement ParseCatchStatement()
+        {
+            TakeKeyword("catch");
+            VariableDeclaration variable = null;
+            if (_current == TokenType.OpenPara)
+            {
+                Take(TokenType.OpenPara);
+                variable = ParseVariableDeclaration(false);
+                Take(TokenType.ClosePara);
+            }
+            SyntaxNode body = ParseLexicalScopeOrStatement();
+            return new CatchStatement(body, variable);
+        }
+
         private ClassDeclaration ParseClass(Visibility visibility)
         {
             TakeKeyword("class");
@@ -566,6 +580,15 @@ namespace PineTree.Language.Parser
             return new PropertyDeclaration(name, type, visibility, getMethod, setMethod);
         }
 
+        private RaiseStatement ParseRaiseStatement()
+        {
+            TakeKeyword("raise");
+
+            Expression expression = ParseExpression();
+
+            return new RaiseStatement(expression);
+        }
+
         private ReturnStatement ParseReturnStatement()
         {
             AcceptToken();
@@ -606,6 +629,14 @@ namespace PineTree.Language.Parser
                         node = ParseWhileStatement();
                         break;
 
+                    case "try":
+                        node = ParseTryStatement();
+                        break;
+
+                    case "raise":
+                        node = ParseRaiseStatement();
+                        break;
+
                     default:
                         node = ParseExpressionTerminal();
                         break;
@@ -643,6 +674,16 @@ namespace PineTree.Language.Parser
             return node;
         }
 
+        private TryStatement ParseTryStatement()
+        {
+            TakeKeyword("try");
+
+            SyntaxNode body = ParseLexicalScopeOrStatement();
+            CatchStatement catchStatement = ParseCatchStatement();
+
+            return new TryStatement(body, catchStatement);
+        }
+
         private void ParseTypeAndName(out string type, out string name, params string[] specialWords)
         {
             if (specialWords.Contains(_current.Value))
@@ -657,7 +698,7 @@ namespace PineTree.Language.Parser
             name = Take(TokenType.Identifier).Value;
         }
 
-        private VariableDeclaration ParseVariableDeclaration()
+        private VariableDeclaration ParseVariableDeclaration(bool allowDefault = true)
         {
             string type;
             string name;
@@ -665,7 +706,7 @@ namespace PineTree.Language.Parser
 
             ParseTypeAndName(out type, out name, "var");
 
-            if (_current == TokenType.Assignment)
+            if (allowDefault && _current == TokenType.Assignment)
             {
                 AcceptToken();
                 value = ParseExpression();

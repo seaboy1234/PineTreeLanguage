@@ -57,6 +57,7 @@
     <Compile Include="Syntax\ArithmeticExpression.cs" />
     <Compile Include="Syntax\ArrayAccessExpression.cs" />
     <Compile Include="Syntax\ArrayDeclarationExpression.cs" />
+    <Compile Include="Syntax\CatchStatement.cs" />
     <Compile Include="Syntax\CompoundExpression.cs" />
     <Compile Include="Syntax\EmptyStatement.cs" />
     <Compile Include="Syntax\Enums\ArithmeticOperator.cs" />
@@ -90,6 +91,8 @@
     <Compile Include="Syntax\SourceDocument.cs" />
     <Compile Include="Syntax\Statement.cs" />
     <Compile Include="Syntax\SyntaxNode.cs" />
+    <Compile Include="Syntax\RaiseStatement.cs" />
+    <Compile Include="Syntax\TryStatement.cs" />
     <Compile Include="Syntax\UnaryExpression.cs" />
     <Compile Include="Syntax\Enums\UnaryOperator.cs" />
     <Compile Include="Syntax\VariableDeclaration.cs" />

@@ -48,6 +48,10 @@ namespace PineTree.Language.Syntax
 
         PreconditionStatement,
 
+        TryStatement,
+        CatchStatement,
+        RaiseStatement,
+
         #endregion Statements
 
         #region Declarations

@@ -15,6 +15,10 @@ namespace PineTree.Language.Lexer
             "while",
             "for",
 
+            "try",
+            "catch",
+            "raise",
+
             "new",
 
             "class",
