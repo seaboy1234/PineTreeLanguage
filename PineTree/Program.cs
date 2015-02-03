@@ -82,7 +82,7 @@ namespace PineTree
                 }
                 catch (RuntimeException e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine("Runtime Error: \{e.Message}");
                 }
                 catch (NotImplementedException)
                 {

@@ -80,16 +80,21 @@ namespace PineTree.Interpreter
                 Completion last = null;
                 CreateLexicalEnvironment();
 
-                foreach (var node in syntaxNode.As<LexicalScope>().Statements)
+                try
                 {
-                    last = Evaluate(node);
-                    if (last.ShouldReturn)
+                    foreach (var node in syntaxNode.As<LexicalScope>().Statements)
                     {
-                        break;
+                        last = Evaluate(node);
+                        if (last.ShouldReturn)
+                        {
+                            break;
+                        }
                     }
                 }
-
-                PopLexicalEnvironment();
+                finally
+                {
+                    PopLexicalEnvironment();
+                }
 
                 return last;
             }

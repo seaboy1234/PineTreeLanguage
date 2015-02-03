@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PineTree.Interpreter.Extensions;
+using PineTree.Interpreter.Native.Error;
 using PineTree.Interpreter.Runtime;
 using PineTree.Language.Syntax;
 
@@ -39,6 +40,12 @@ namespace PineTree.Interpreter
 
                 case SyntaxTypes.ElseStatement:
                     return EvaluateElse(statement.As<ElseStatement>());
+
+                case SyntaxTypes.TryStatement:
+                    return EvaluateTry(statement.As<TryStatement>());
+
+                case SyntaxTypes.RaiseStatement:
+                    return EvaluateRaise(statement.As<RaiseStatement>());
 
                 default:
                     throw new NotImplementedException();
@@ -110,11 +117,41 @@ namespace PineTree.Interpreter
             return new Completion(false, RuntimeValue.Null);
         }
 
+        private Completion EvaluateRaise(RaiseStatement raiseStatement)
+        {
+            var error = _engine.Evaluate(raiseStatement.Expression);
+            if (error.Value.TypeInfo != TypeInfo.Error)
+            {
+                throw new RuntimeException("Error must be a instance of the Error class!");
+            }
+
+            throw error.Value.As<ErrorInstance>().Exception;
+        }
+
         private Completion EvaluateReturn(ReturnStatement statement)
         {
             RuntimeValue value = _engine.Evaluate(statement.Expression).Value;
 
             return new Completion(true, value);
+        }
+
+        private Completion EvaluateTry(TryStatement statement)
+        {
+            try
+            {
+                return _engine.Evaluate(statement.Body);
+            }
+            catch (RuntimeException e)
+            {
+                var local = _engine.CreateLexicalEnvironment();
+                if (statement.CatchStatement.Variable != null)
+                {
+                    RuntimeValue value = new RuntimeValue(e.Error);
+                    local.SetLocal(statement.CatchStatement.Variable.Name, value);
+                }
+                _engine.Evaluate(statement.CatchStatement.Body);
+            }
+            return new Completion(false, RuntimeValue.Null);
         }
 
         private Completion EvaluateWhile(WhileStatement whileStatement)
