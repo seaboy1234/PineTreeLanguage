@@ -51,6 +51,8 @@
     <Compile Include="Native\Boolean\BooleanType.cs" />
     <Compile Include="Native\Class\ClassMetadata.cs" />
     <Compile Include="Native\Class\ObjectInstance.cs" />
+    <Compile Include="Native\Error\ErrorInstance.cs" />
+    <Compile Include="Native\Error\ErrorType.cs" />
     <Compile Include="Native\Float\FloatInstance.cs" />
     <Compile Include="Native\Float\FloatType.cs" />
     <Compile Include="Native\Function\ConstructorInstance.cs" />

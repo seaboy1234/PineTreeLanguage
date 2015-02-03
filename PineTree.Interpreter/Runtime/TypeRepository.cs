@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PineTree.Interpreter.Native.Array;
 using PineTree.Interpreter.Native.Boolean;
+using PineTree.Interpreter.Native.Error;
 using PineTree.Interpreter.Native.Float;
 using PineTree.Interpreter.Native.Function;
 using PineTree.Interpreter.Native.Integer;
@@ -28,6 +29,7 @@ namespace PineTree.Interpreter.Runtime
                 new StringType(),
                 new LamdaArgumentType(),
                 new ArrayType(),
+                new ErrorType(),
             };
         }
 

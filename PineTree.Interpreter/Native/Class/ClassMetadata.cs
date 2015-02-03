@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PineTree.Interpreter.Native.Error;
 using PineTree.Interpreter.Native.Function;
 using PineTree.Interpreter.Runtime;
 using PineTree.Language.Syntax;
@@ -43,7 +44,15 @@ namespace PineTree.Interpreter.Native.Class
 
         public override RuntimeValue CreateInstance(PineTreeEngine engine, RuntimeValue[] args)
         {
-            ObjectInstance instance = new ObjectInstance(engine, this);
+            RuntimeObject instance;
+            if (ParentType == "Error")
+            {
+                instance = new ErrorInstance(engine, )
+            }
+            else
+            {
+                instance = = new ObjectInstance(engine, this);
+            }
 
             if (!string.IsNullOrEmpty(ParentType))
             {
@@ -69,7 +78,7 @@ namespace PineTree.Interpreter.Native.Class
             return thisBinding;
         }
 
-        public ObjectInstance ImportMembers(PineTreeEngine engine, ObjectInstance instance)
+        public RuntimeObject ImportMembers(PineTreeEngine engine, RuntimeObject instance)
         {
             if (instance == null)
             {
