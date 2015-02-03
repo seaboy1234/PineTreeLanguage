@@ -47,11 +47,11 @@ namespace PineTree.Interpreter.Native.Class
             RuntimeObject instance;
             if (ParentType == "Error")
             {
-                instance = new ErrorInstance(engine, )
+                instance = new ErrorInstance(engine);
             }
             else
             {
-                instance = = new ObjectInstance(engine, this);
+                instance = new ObjectInstance(engine, this);
             }
 
             if (!string.IsNullOrEmpty(ParentType))
