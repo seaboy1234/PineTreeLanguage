@@ -9,12 +9,19 @@ namespace PineTree.Interpreter.Native.Function
 {
     public class LamdaArgumentType : TypeMetadata
     {
+        public override TypeInfo Info => TypeInfo.Unknown;
+
         public override string Name
         {
             get
             {
                 return "Lambda_Argument";
             }
+        }
+
+        public override bool CanCastTo(TypeMetadata typeMetadata)
+        {
+            return true;
         }
 
         public override RuntimeValue CreateInstance(PineTreeEngine interpreter, RuntimeValue[] args)

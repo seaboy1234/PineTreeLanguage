@@ -30,6 +30,11 @@ namespace PineTree.Interpreter.Native.Class
 
         public override string ToString()
         {
+            ICallable method;
+            if ((method = ResolveMethod("toString", TypeMetadata.Empty)) != null)
+            {
+                return method.Invoke(new RuntimeValue(this), new RuntimeValue[0]).ToString();
+            }
             return _type.Name;
         }
     }

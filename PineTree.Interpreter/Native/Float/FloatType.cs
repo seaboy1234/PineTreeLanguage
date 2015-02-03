@@ -9,7 +9,20 @@ namespace PineTree.Interpreter.Native.Float
 {
     public class FloatType : TypeMetadata
     {
+        public override TypeInfo Info
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public override string Name => "float";
+
+        public override bool CanCastTo(TypeMetadata typeMetadata)
+        {
+            return typeMetadata.Info == TypeInfo.Float || typeMetadata.Info == TypeInfo.Int || typeMetadata.Info == TypeInfo.String || typeMetadata.Info == TypeInfo.Boolean;
+        }
 
         public override RuntimeValue CreateInstance(PineTreeEngine interpreter, RuntimeValue[] args)
         {

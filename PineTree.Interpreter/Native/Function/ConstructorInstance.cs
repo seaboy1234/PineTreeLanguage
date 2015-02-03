@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PineTree.Interpreter.Extensions;
 using PineTree.Interpreter.Runtime;
 using PineTree.Language.Syntax;
 
@@ -40,11 +41,7 @@ namespace PineTree.Interpreter.Native.Function
 
         public bool ArgumentsMatch(TypeMetadata[] types)
         {
-            if (_arguments.Any(g => g == null))
-            {
-                throw new RuntimeException("Missing type");
-            }
-            return types.SequenceEqual(_arguments);
+            return types.All((i, g) => g == null || g.CanCastTo(_arguments[i])) && _arguments.Count == types.Length;
         }
 
         public RuntimeValue Invoke(RuntimeValue thisBinding, RuntimeValue[] args)

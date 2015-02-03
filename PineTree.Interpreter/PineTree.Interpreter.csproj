@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExpressionInterpreter.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\SyntaxNodeExtensions.cs" />
     <Compile Include="Interop\ClrObjectInstance.cs" />
     <Compile Include="Interop\ExternalMethod.cs" />

@@ -17,7 +17,11 @@ namespace PineTree.Interpreter.Native.Class
         private List<FunctionInstance> _methods;
         private List<PropertyReference> _properties;
 
+        public override TypeInfo Info => TypeInfo.Object;
+
         public override string Name { get; }
+
+        public string ParentType { get; }
 
         public ClassMetadata(PineTreeEngine engine, ClassDeclaration declaration)
         {
@@ -29,28 +33,24 @@ namespace PineTree.Interpreter.Native.Class
 
             ImportClass(declaration);
             Name = declaration.Name;
+            ParentType = declaration.Supertype;
+        }
+
+        public override bool CanCastTo(TypeMetadata typeMetadata)
+        {
+            return typeMetadata.Name == Name;
         }
 
         public override RuntimeValue CreateInstance(PineTreeEngine engine, RuntimeValue[] args)
         {
-            var obj = new ObjectInstance(engine, this);
+            ObjectInstance instance = new ObjectInstance(engine, this);
 
-            foreach (var field in _fields)
+            if (!string.IsNullOrEmpty(ParentType))
             {
-                obj.BindField(field.Name, engine.Evaluate(field.Value)?.Value ?? RuntimeValue.Null);
+                (engine.ResolveType(ParentType) as ClassMetadata)?.ImportMembers(engine, instance);
             }
 
-            foreach (var property in _properties)
-            {
-                obj.BindProperty(property);
-            }
-
-            foreach (var method in _methods)
-            {
-                obj.BindMethod(method.Name, method);
-            }
-
-            var thisBinding = new RuntimeValue(obj);
+            var thisBinding = new RuntimeValue(instance);
 
             if (_constructors.Count > 0)
             {
@@ -67,6 +67,29 @@ namespace PineTree.Interpreter.Native.Class
             }
 
             return thisBinding;
+        }
+
+        public ObjectInstance ImportMembers(PineTreeEngine engine, ObjectInstance instance)
+        {
+            if (instance == null)
+            {
+                instance = new ObjectInstance(engine, this);
+            }
+            foreach (var field in _fields)
+            {
+                instance.BindField(field.Name, engine.Evaluate(field.Value)?.Value ?? RuntimeValue.Null);
+            }
+
+            foreach (var property in _properties)
+            {
+                instance.BindProperty(property);
+            }
+
+            foreach (var method in _methods)
+            {
+                instance.BindMethod(method.Name, method);
+            }
+            return instance;
         }
 
         private void ImportClass(ClassDeclaration declaration)

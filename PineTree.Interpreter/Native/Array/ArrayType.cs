@@ -9,7 +9,14 @@ namespace PineTree.Interpreter.Native.Array
 {
     public class ArrayType : TypeMetadata
     {
+        public override TypeInfo Info => TypeInfo.Array;
+
         public override string Name => "array";
+
+        public override bool CanCastTo(TypeMetadata typeMetadata)
+        {
+            return typeMetadata.Info == TypeInfo.Array;
+        }
 
         public override RuntimeValue CreateInstance(PineTreeEngine interpreter, RuntimeValue[] args)
         {

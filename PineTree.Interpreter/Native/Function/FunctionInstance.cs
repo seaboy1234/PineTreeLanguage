@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PineTree.Interpreter.Extensions;
 using PineTree.Interpreter.Native.Boolean;
 using PineTree.Interpreter.Runtime;
 using PineTree.Language.Syntax;
@@ -45,7 +46,7 @@ namespace PineTree.Interpreter.Native.Function
 
         public bool ArgumentsMatch(TypeMetadata[] types)
         {
-            return types.SequenceEqual(_arguments);
+            return types.All((i, g) => g == null || g.CanCastTo(_arguments[i])) && _arguments.Count == types.Length;
         }
 
         public RuntimeValue Invoke(RuntimeValue thisBinding, RuntimeValue[] args)
@@ -54,9 +55,9 @@ namespace PineTree.Interpreter.Native.Function
 
             try
             {
-                foreach (var arg in _methodInfo.Arguments.Zip(args, (g, f) => new { Name = g.Name, Value = f }))
+                foreach (var arg in _methodInfo.Arguments.Zip(args.Zip(_arguments, (g, f) => new { Type = f, Value = g }), (g, f) => new { Name = g.Name, Value = f.Value, Type = f.Type }))
                 {
-                    Engine.ExecutionContext.SetLocal(arg.Name, arg.Value);
+                    Engine.ExecutionContext.SetLocal(arg.Name, arg.Type.CreateInstance(Engine, new[] { arg.Value }));
                 }
 
                 if (_methodInfo.Preconditions != null)

@@ -9,7 +9,14 @@ namespace PineTree.Interpreter.Native.String
 {
     public class StringType : TypeMetadata
     {
+        public override TypeInfo Info => TypeInfo.String;
+
         public override string Name => "string";
+
+        public override bool CanCastTo(TypeMetadata typeMetadata)
+        {
+            return typeMetadata.Info == TypeInfo.String || typeMetadata.Info == TypeInfo.Boolean || typeMetadata.Info == TypeInfo.Int || typeMetadata.Info == TypeInfo.Float;
+        }
 
         public override RuntimeValue CreateInstance(PineTreeEngine interpreter, RuntimeValue[] args)
         {

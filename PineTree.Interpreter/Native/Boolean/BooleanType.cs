@@ -12,7 +12,14 @@ namespace PineTree.Interpreter.Native.Boolean
 {
     public class BooleanType : TypeMetadata
     {
+        public override TypeInfo Info => TypeInfo.Boolean;
+
         public override string Name => "boolean";
+
+        public override bool CanCastTo(TypeMetadata typeMetadata)
+        {
+            return typeMetadata.Info == TypeInfo.Boolean || typeMetadata.Info == TypeInfo.String;
+        }
 
         public override RuntimeValue CreateInstance(PineTreeEngine engine, RuntimeValue[] args)
         {

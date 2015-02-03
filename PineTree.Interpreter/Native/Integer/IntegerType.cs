@@ -9,16 +9,35 @@ namespace PineTree.Interpreter.Native.Integer
 {
     public class IntegerType : TypeMetadata
     {
+        public override TypeInfo Info => TypeInfo.Int;
+
         public override string Name => "int";
+
+        public override bool CanCastTo(TypeMetadata typeMetadata)
+        {
+            return typeMetadata.Info == TypeInfo.Int || typeMetadata.Info == TypeInfo.String || typeMetadata.Info == TypeInfo.Float || typeMetadata.Info == TypeInfo.Boolean;
+        }
 
         public override RuntimeValue CreateInstance(PineTreeEngine interpreter, RuntimeValue[] args)
         {
-            int value = 0;
-            if (args.Length > 0)
+            if (args.Length == 1)
             {
-                int.TryParse(args[0].ToString(), out value);
+                switch (args[0].TypeInfo)
+                {
+                    case TypeInfo.Int:
+                        return args[0];
+
+                    case TypeInfo.Null:
+                        return new RuntimeValue(new IntegerInstance(interpreter));
+
+                    case TypeInfo.String:
+                        return new RuntimeValue(new IntegerInstance(interpreter, int.Parse(args[0].ToString())));
+
+                    case TypeInfo.Float:
+                        return new RuntimeValue(new IntegerInstance(interpreter, (int)((double)args[0].ToClr())));
+                }
             }
-            return new RuntimeValue(new IntegerInstance(interpreter, value));
+            return RuntimeValue.Null;
         }
     }
 }
