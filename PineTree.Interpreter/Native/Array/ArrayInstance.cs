@@ -58,7 +58,7 @@ namespace PineTree.Interpreter.Native.Array
 
         public override string ToString()
         {
-            return "\{_type.Name}[\{_array.Length}]";
+            return $"{_type.Name}[{_array.Length}]";
         }
     }
 }

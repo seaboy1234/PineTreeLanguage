@@ -555,19 +555,32 @@ namespace PineTree.Language.Parser
                 {
                     Take(_current.Type);
                     var body = ParseLexicalScope();
-                    getMethod = new MethodDeclaration("get_\{name}", type, visibility, new VariableDeclaration[0], body);
+                    getMethod = new MethodDeclaration($"get_{name}", type, visibility, new VariableDeclaration[0], body);
                     hasGet = true;
                 }
                 else if (_current == "set" && !hasSet)
                 {
                     Take(_current.Type);
                     var body = ParseLexicalScope();
-                    setMethod = new MethodDeclaration("set_\{name}", type, visibility, new[] { new VariableDeclaration("value", type, null) }, body);
+                    setMethod = new MethodDeclaration($"set_{name}", type, visibility, new[] { new VariableDeclaration("value", type, null) }, body);
                     hasSet = true;
                 }
                 else
                 {
-                    throw UnexpectedToken("\{hasGet ? "" : "'get', "}\{hasSet ? "" : "'set', "}'}'");
+					StringBuilder message = new StringBuilder();
+					if (!hasGet)
+					{
+						message.Append("get");
+					}
+					if (!hasGet && !hasSet)
+					{
+						message.Append(" or ");
+					}
+					if (!hasSet)
+					{
+						message.Append("set");
+					}
+					throw UnexpectedToken(message.ToString());
                 }
             }
             Take(TokenType.CloseBracket);
@@ -769,7 +782,7 @@ namespace PineTree.Language.Parser
 
         private SyntaxException SyntaxError(string message)
         {
-            return new SyntaxException("\{_current.Start} \{_current.Span} \{message}");
+            return new SyntaxException($"{{_current.Start}} {{_current.Span}} {{message}}");
         }
 
         #region Parse Expression
@@ -1395,7 +1408,7 @@ namespace PineTree.Language.Parser
         {
             if (_current != type)
             {
-                throw UnexpectedToken("\{type.ToString().ToLower()}");
+                throw UnexpectedToken(type.ToString().ToLower());
             }
             AcceptToken();
             return _last;
@@ -1405,7 +1418,7 @@ namespace PineTree.Language.Parser
         {
             if (_current != type || _current != value)
             {
-                throw UnexpectedToken("'\{value}'");
+                throw UnexpectedToken($"'{{value}}'");
             }
             AcceptToken();
             return _last;
@@ -1418,13 +1431,13 @@ namespace PineTree.Language.Parser
 
         private SyntaxException UnexpectedToken(string expected)
         {
-            string message = "\{_current.Start} \{_current.Span} Unexpected Token '\{_current.Value}'.  Expected \{expected}";
+            string message = $"{_current.Start} {_current.Span} Unexpected Token '{_current.Value}'.  Expected {expected}";
             return new SyntaxException(message);
         }
 
         private SyntaxException UnexpectedToken(Token value, string expected)
         {
-            string message = "\{value.Start} \{value.Span} Unexpected Token '\{value.Value}'.  Expected \{expected}";
+            string message = $"{value.Start} {value.Span} Unexpected Token '{value.Value}'.  Expected {expected}";
             return new SyntaxException(message);
         }
     }

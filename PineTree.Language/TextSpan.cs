@@ -22,7 +22,7 @@ namespace PineTree.Language
 
         public override string ToString()
         {
-            return "\{Lines} \{Length}";
+            return $"{Lines} {Length}";
         }
     }
 }

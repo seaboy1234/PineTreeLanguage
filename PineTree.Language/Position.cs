@@ -18,7 +18,7 @@
 
         public override string ToString()
         {
-            return "(\{FileIndex}) \{LineNumber} \{LineIndex}";
+            return $"({FileIndex}) {LineNumber} {LineIndex}";
         }
     }
 }

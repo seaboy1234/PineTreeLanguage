@@ -17,6 +17,11 @@ namespace PineTree
     {
         private class ScriptContext
         {
+            public void clear()
+            {
+                Console.Clear();
+            }
+
             public void println(string value)
             {
                 Console.WriteLine(value);
@@ -82,7 +87,7 @@ namespace PineTree
                 }
                 catch (RuntimeException e)
                 {
-                    Console.WriteLine("Runtime Error: \{e.Message}");
+                    Console.WriteLine($"Runtime Error: {e.Message}");
                 }
                 catch (NotImplementedException)
                 {

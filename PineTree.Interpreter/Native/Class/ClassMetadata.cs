@@ -58,6 +58,7 @@ namespace PineTree.Interpreter.Native.Class
             {
                 (engine.ResolveType(ParentType) as ClassMetadata)?.ImportMembers(engine, instance);
             }
+			ImportMembers(engine, instance);
 
             var thisBinding = new RuntimeValue(instance);
 

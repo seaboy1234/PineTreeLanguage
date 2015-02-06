@@ -56,7 +56,7 @@ namespace PineTree.Interpreter
         {
             if (_engine.IsDefined(variableDeclaration.Name))
             {
-                throw new RuntimeException("\{variableDeclaration.Name} is already defined.");
+                throw new RuntimeException($"{variableDeclaration.Name} is already defined.");
             }
 
             RuntimeValue value = RuntimeValue.Null;
