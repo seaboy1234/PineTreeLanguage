@@ -10,162 +10,171 @@ using PineTree.Language.Syntax;
 
 namespace PineTree.Interpreter
 {
-    public class StatementInterpreter
-    {
-        private PineTreeEngine _engine;
+	public class StatementInterpreter
+	{
+		private PineTreeEngine _engine;
 
-        public StatementInterpreter(PineTreeEngine engine)
-        {
-            _engine = engine;
-        }
+		public StatementInterpreter(PineTreeEngine engine)
+		{
+			_engine = engine;
+		}
 
-        public Completion Evaluate(Statement statement)
-        {
-            switch (statement.SyntaxType)
-            {
-                case SyntaxTypes.VariableDeclaration:
-                    return DeclareVariable(statement.As<VariableDeclaration>());
+		public Completion Evaluate(Statement statement)
+		{
+			switch (statement.SyntaxType)
+			{
+				case SyntaxTypes.VariableDeclaration:
+					return DeclareVariable(statement.As<VariableDeclaration>());
 
-                case SyntaxTypes.ReturnStatement:
-                    return EvaluateReturn(statement.As<ReturnStatement>());
+				case SyntaxTypes.ReturnStatement:
+					return EvaluateReturn(statement.As<ReturnStatement>());
 
-                case SyntaxTypes.IfStatement:
-                    return EvaluateIf(statement.As<IfStatement>());
+				case SyntaxTypes.IfStatement:
+					return EvaluateIf(statement.As<IfStatement>());
 
-                case SyntaxTypes.WhileStatement:
-                    return EvaluateWhile(statement.As<WhileStatement>());
+				case SyntaxTypes.WhileStatement:
+					return EvaluateWhile(statement.As<WhileStatement>());
 
-                case SyntaxTypes.ForStatement:
-                    return EvaluateFor(statement.As<ForStatement>());
+				case SyntaxTypes.ForStatement:
+					return EvaluateFor(statement.As<ForStatement>());
 
-                case SyntaxTypes.ElseStatement:
-                    return EvaluateElse(statement.As<ElseStatement>());
+				case SyntaxTypes.ElseStatement:
+					return EvaluateElse(statement.As<ElseStatement>());
 
-                case SyntaxTypes.TryStatement:
-                    return EvaluateTry(statement.As<TryStatement>());
+				case SyntaxTypes.TryStatement:
+					return EvaluateTry(statement.As<TryStatement>());
 
-                case SyntaxTypes.RaiseStatement:
-                    return EvaluateRaise(statement.As<RaiseStatement>());
+				case SyntaxTypes.RaiseStatement:
+					return EvaluateRaise(statement.As<RaiseStatement>());
 
-                default:
-                    throw new NotImplementedException();
-            }
-        }
+				case SyntaxTypes.ImportStatement:
+					return EvaluateImport(statement.As<ImportStatement>());
 
-        private Completion DeclareVariable(VariableDeclaration variableDeclaration)
-        {
-            if (_engine.IsDefined(variableDeclaration.Name))
-            {
-                throw new RuntimeException($"{variableDeclaration.Name} is already defined.");
-            }
+				default:
+					throw new NotImplementedException();
+			}
+		}
 
-            RuntimeValue value = RuntimeValue.Null;
+		private Completion DeclareVariable(VariableDeclaration variableDeclaration)
+		{
+			if (_engine.IsDefined(variableDeclaration.Name))
+			{
+				throw new RuntimeException($"{variableDeclaration.Name} is already defined.");
+			}
 
-            if (variableDeclaration.Value != null)
-            {
-                value = _engine.Evaluate(variableDeclaration.Value).Value;
-            }
+			RuntimeValue value = RuntimeValue.Null;
 
-            _engine.SetValue(variableDeclaration.Name, value);
-            return new Completion(false, value);
-        }
+			if (variableDeclaration.Value != null)
+			{
+				value = _engine.Evaluate(variableDeclaration.Value).Value;
+			}
 
-        private Completion EvaluateElse(ElseStatement elseStatement)
-        {
-            return _engine.Evaluate(elseStatement.Body);
-        }
+			_engine.SetValue(variableDeclaration.Name, value);
+			return new Completion(false, value);
+		}
 
-        private Completion EvaluateFor(ForStatement statement)
-        {
-            _engine.CreateLexicalEnvironment();
-            _engine.Evaluate(statement.Variable);
-            Completion completion = null;
-            while ((bool)_engine.Evaluate(statement.Predicate).Value.ToClr())
-            {
-                completion = _engine.Evaluate(statement.Body);
+		private Completion EvaluateElse(ElseStatement elseStatement)
+		{
+			return _engine.Evaluate(elseStatement.Body);
+		}
 
-                if (completion.ShouldReturn)
-                {
-                    break;
-                }
+		private Completion EvaluateFor(ForStatement statement)
+		{
+			_engine.CreateLexicalEnvironment();
+			_engine.Evaluate(statement.Variable);
+			Completion completion = null;
+			while ((bool)_engine.Evaluate(statement.Predicate).Value.ToClr())
+			{
+				completion = _engine.Evaluate(statement.Body);
 
-                _engine.Evaluate(statement.Increment);
-            }
-            _engine.PopLexicalEnvironment();
-            return completion ?? new Completion(false, RuntimeValue.Null);
-        }
+				if (completion.ShouldReturn)
+				{
+					break;
+				}
 
-        private Completion EvaluateIf(IfStatement ifStatement)
-        {
-            var predicateValue = _engine.Evaluate(ifStatement.Predicate);
+				_engine.Evaluate(statement.Increment);
+			}
+			_engine.PopLexicalEnvironment();
+			return completion ?? new Completion(false, RuntimeValue.Null);
+		}
 
-            if (predicateValue.Value.TypeInfo != TypeInfo.Boolean)
-            {
-                throw new RuntimeException("Predicate must return a boolean!");
-            }
+		private Completion EvaluateIf(IfStatement ifStatement)
+		{
+			var predicateValue = _engine.Evaluate(ifStatement.Predicate);
 
-            if ((bool)predicateValue.Value.ToClr())
-            {
-                Completion completion = _engine.Evaluate(ifStatement.Body);
+			if (predicateValue.Value.TypeInfo != TypeInfo.Boolean)
+			{
+				throw new RuntimeException("Predicate must return a boolean!");
+			}
 
-                return completion;
-            }
-            else if (ifStatement.ElseStatement != null)
-            {
-                return _engine.Evaluate(ifStatement.ElseStatement);
-            }
-            return new Completion(false, RuntimeValue.Null);
-        }
+			if ((bool)predicateValue.Value.ToClr())
+			{
+				Completion completion = _engine.Evaluate(ifStatement.Body);
 
-        private Completion EvaluateRaise(RaiseStatement raiseStatement)
-        {
-            var error = _engine.Evaluate(raiseStatement.Expression);
-            if (error.Value.TypeInfo != TypeInfo.Error)
-            {
-                throw new RuntimeException("Error must be a instance of the Error class!");
-            }
+				return completion;
+			}
+			else if (ifStatement.ElseStatement != null)
+			{
+				return _engine.Evaluate(ifStatement.ElseStatement);
+			}
+			return new Completion(false, RuntimeValue.Null);
+		}
 
-            throw error.Value.As<ErrorInstance>().Exception;
-        }
+		private Completion EvaluateImport(ImportStatement importStatement)
+		{
+			_engine.ImportModule(importStatement.API);
+			return new Completion(false, RuntimeValue.Null);
+		}
 
-        private Completion EvaluateReturn(ReturnStatement statement)
-        {
-            RuntimeValue value = _engine.Evaluate(statement.Expression).Value;
+		private Completion EvaluateRaise(RaiseStatement raiseStatement)
+		{
+			var error = _engine.Evaluate(raiseStatement.Expression);
+			if (error.Value.TypeInfo != TypeInfo.Error)
+			{
+				throw new RuntimeException("Error must be a instance of the Error class!");
+			}
 
-            return new Completion(true, value);
-        }
+			throw error.Value.As<ErrorInstance>().Exception;
+		}
 
-        private Completion EvaluateTry(TryStatement statement)
-        {
-            try
-            {
-                return _engine.Evaluate(statement.Body);
-            }
-            catch (RuntimeException e)
-            {
-                var local = _engine.CreateLexicalEnvironment();
-                if (statement.CatchStatement.Variable != null)
-                {
-                    RuntimeValue value = new RuntimeValue(e.Error);
-                    local.SetLocal(statement.CatchStatement.Variable.Name, value);
-                }
-                _engine.Evaluate(statement.CatchStatement.Body);
-            }
-            return new Completion(false, RuntimeValue.Null);
-        }
+		private Completion EvaluateReturn(ReturnStatement statement)
+		{
+			RuntimeValue value = _engine.Evaluate(statement.Expression).Value;
 
-        private Completion EvaluateWhile(WhileStatement whileStatement)
-        {
-            Completion completion = null;
-            while ((bool)_engine.Evaluate(whileStatement.Predicate).Value.ToClr())
-            {
-                completion = _engine.Evaluate(whileStatement.Body);
-                if (completion.ShouldReturn)
-                {
-                    return completion;
-                }
-            }
-            return completion ?? new Completion(false, RuntimeValue.Null);
-        }
-    }
+			return new Completion(true, value);
+		}
+
+		private Completion EvaluateTry(TryStatement statement)
+		{
+			try
+			{
+				return _engine.Evaluate(statement.Body);
+			}
+			catch (RuntimeException e)
+			{
+				var local = _engine.CreateLexicalEnvironment();
+				if (statement.CatchStatement.Variable != null)
+				{
+					RuntimeValue value = new RuntimeValue(e.Error);
+					local.SetLocal(statement.CatchStatement.Variable.Name, value);
+				}
+				_engine.Evaluate(statement.CatchStatement.Body);
+			}
+			return new Completion(false, RuntimeValue.Null);
+		}
+
+		private Completion EvaluateWhile(WhileStatement whileStatement)
+		{
+			Completion completion = null;
+			while ((bool)_engine.Evaluate(whileStatement.Predicate).Value.ToClr())
+			{
+				completion = _engine.Evaluate(whileStatement.Body);
+				if (completion.ShouldReturn)
+				{
+					return completion;
+				}
+			}
+			return completion ?? new Completion(false, RuntimeValue.Null);
+		}
+	}
 }
