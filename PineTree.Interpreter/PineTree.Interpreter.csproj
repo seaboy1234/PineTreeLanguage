@@ -67,6 +67,7 @@
     <Compile Include="Native\String\StringType.cs" />
     <Compile Include="PineTreeEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResolveModuleEventArgs.cs" />
     <Compile Include="Runtime\Completion.cs" />
     <Compile Include="Runtime\Environment\ExecutionContext.cs" />
     <Compile Include="Runtime\Environment\FunctionCallContext.cs" />

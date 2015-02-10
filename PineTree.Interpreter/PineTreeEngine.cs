@@ -20,267 +20,286 @@ using PineTree.Language.Syntax;
 
 namespace PineTree.Interpreter
 {
-	public class PineTreeEngine
-	{
-		private static TypeRepository _TypeRepository;
-		private Stack<PineTreeEnvironment> _callStack;
-		private Module _currentModule;
-		private ExpressionInterpreter _expressionInterpreter;
-		private PineTreeParser _parser;
-		private ExecutionContext _rootContext;
-		private StatementInterpreter _statementInterpreter;
+    public class PineTreeEngine
+    {
+        private static TypeRepository _TypeRepository;
+        private Stack<PineTreeEnvironment> _callStack;
+        private Module _currentModule;
+        private ExpressionInterpreter _expressionInterpreter;
+        private PineTreeParser _parser;
+        private ExecutionContext _rootContext;
+        private StatementInterpreter _statementInterpreter;
 
-		public PineTreeEnvironment ExecutionContext => _callStack.Peek();
+        public PineTreeEnvironment ExecutionContext => _callStack.Peek();
 
-		public PineTreeEnvironment RootContext => _rootContext;
+        public PineTreeEnvironment RootContext => _rootContext;
 
-		static PineTreeEngine()
-		{
-			_TypeRepository = new TypeRepository();
-		}
+        public event EventHandler<ResolveModuleEventArgs> ResolveSpecialModule;
 
-		public PineTreeEngine()
-		{
-			_parser = new PineTreeParser();
-			_expressionInterpreter = new ExpressionInterpreter(this);
-			_statementInterpreter = new StatementInterpreter(this);
-			_callStack = new Stack<PineTreeEnvironment>();
-			_rootContext = new ExecutionContext(CreateDynamicModule());
-			_callStack.Push(_rootContext);
-		}
+        static PineTreeEngine()
+        {
+            _TypeRepository = new TypeRepository();
+        }
 
-		public Completion Evaluate(SyntaxNode syntaxNode)
-		{
-			if (syntaxNode == null)
-			{
-				return null;
-			}
-			if (syntaxNode is Statement)
-			{
-				return _statementInterpreter.Evaluate(syntaxNode.As<Statement>());
-			}
-			else if (syntaxNode is Expression)
-			{
-				return new Completion(false, _expressionInterpreter.EvaluateExpression(syntaxNode.As<Expression>()));
-			}
-			else if (syntaxNode is ClassDeclaration)
-			{
-				_TypeRepository.DefineType(new ClassMetadata(this, syntaxNode.As<ClassDeclaration>()));
+        public PineTreeEngine()
+        {
+            _parser = new PineTreeParser();
+            _expressionInterpreter = new ExpressionInterpreter(this);
+            _statementInterpreter = new StatementInterpreter(this);
+            _callStack = new Stack<PineTreeEnvironment>();
+            _rootContext = new ExecutionContext(CreateDynamicModule());
+            _callStack.Push(_rootContext);
+        }
 
-				return new Completion(true, new RuntimeValue(new StringInstance(this, "class")));
-			}
-			else if (syntaxNode is MethodDeclaration)
-			{
-				FunctionInstance func = new FunctionInstance(this, syntaxNode.As<MethodDeclaration>());
-				SetValue(func.Name, func);
+        public Module CreateModule(string path)
+        {
+            var args = new ResolveModuleEventArgs(path);
+            Module foundModule;
 
-				return new Completion(true, new RuntimeValue(func));
-			}
-			else if (syntaxNode is LexicalScope)
-			{
-				Completion last = null;
-				CreateLexicalEnvironment();
+            ResolveSpecialModule?.Invoke(this, args);
 
-				try
-				{
-					foreach (var node in syntaxNode.As<LexicalScope>().Statements)
-					{
-						last = Evaluate(node);
-						if (last.ShouldReturn)
-						{
-							break;
-						}
-					}
-				}
-				finally
-				{
-					PopLexicalEnvironment();
-				}
+            if (args.ResolvedModule != null)
+            {
+                foundModule = args.ResolvedModule;
+            }
+            else
+            {
+                path = path.Replace('.', Path.DirectorySeparatorChar) + ".pt";
 
-				return last;
-			}
-			else if (syntaxNode is SourceDocument)
-			{
-				Completion last = null;
+                var module = _currentModule;
+                foundModule = CreateDynamicModule();
 
-				foreach (var node in syntaxNode.As<SourceDocument>().Contents)
-				{
-					last = Evaluate(node);
-				}
+                Execute(File.ReadAllText(path));
 
-				return last;
-			}
-			else
-			{
-				throw new NotImplementedException();
-			}
-		}
+                _currentModule = module;
+            }
 
-		public RuntimeValue Execute(string sourceCode)
-		{
-			return Evaluate(_parser.ParseScript(sourceCode)).Value;
-		}
+            return foundModule;
+        }
 
-		public ObjectReference GetReference(string name)
-		{
-			return ExecutionContext.GetReference(name);
-		}
+        public Completion Evaluate(SyntaxNode syntaxNode)
+        {
+            if (syntaxNode == null)
+            {
+                return null;
+            }
+            if (syntaxNode is Statement)
+            {
+                return _statementInterpreter.Evaluate(syntaxNode.As<Statement>());
+            }
+            else if (syntaxNode is Expression)
+            {
+                return new Completion(false, _expressionInterpreter.EvaluateExpression(syntaxNode.As<Expression>()));
+            }
+            else if (syntaxNode is ClassDeclaration)
+            {
+                _currentModule.DefineType(new ClassMetadata(this, syntaxNode.As<ClassDeclaration>()));
 
-		public RuntimeValue GetValue(string name)
-		{
-			return ExecutionContext.GetLocal(name);
-		}
+                return new Completion(true, new RuntimeValue(new StringInstance(this, "class")));
+            }
+            else if (syntaxNode is MethodDeclaration)
+            {
+                FunctionInstance func = new FunctionInstance(this, syntaxNode.As<MethodDeclaration>());
+                _currentModule.BindMethod(func.Name, func);
 
-		public void ImportModule(string path)
-		{
-			path = path.Replace('.', Path.DirectorySeparatorChar) + ".pt";
+                return new Completion(true, new RuntimeValue(func));
+            }
+            else if (syntaxNode is LexicalScope)
+            {
+                Completion last = null;
+                CreateLexicalEnvironment();
 
-			var module = _currentModule;
-			var import = CreateDynamicModule();
+                try
+                {
+                    foreach (var node in syntaxNode.As<LexicalScope>().Statements)
+                    {
+                        last = Evaluate(node);
+                        if (last.ShouldReturn)
+                        {
+                            break;
+                        }
+                    }
+                }
+                finally
+                {
+                    PopLexicalEnvironment();
+                }
 
-			Execute(File.ReadAllText(path));
+                return last;
+            }
+            else if (syntaxNode is SourceDocument)
+            {
+                Completion last = null;
 
-			_rootContext.AddModule(import);
+                foreach (var node in syntaxNode.As<SourceDocument>().Contents)
+                {
+                    last = Evaluate(node);
+                }
 
-			_currentModule = module;
-		}
+                return last;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
 
-		public bool IsDefined(string name)
-		{
-			return ExecutionContext.IsDefined(name);
-		}
+        public RuntimeValue Execute(string sourceCode)
+        {
+            return Evaluate(_parser.ParseScript(sourceCode)).Value;
+        }
 
-		public void SetValue(string name, object value)
-		{
-			RuntimeValue runtimeValue;
-			if (value == null)
-			{
-				runtimeValue = RuntimeValue.Null;
-			}
-			else if (value is Delegate)
-			{
-				runtimeValue = new RuntimeValue(new ExternalMethod(this, (Delegate)value));
-			}
-			else
-			{
-				runtimeValue = CastObject(value);
-			}
+        public ObjectReference GetReference(string name)
+        {
+            return ExecutionContext.GetReference(name);
+        }
 
-			ExecutionContext.SetLocal(name, runtimeValue);
-		}
+        public RuntimeValue GetValue(string name)
+        {
+            return ExecutionContext.GetLocal(name);
+        }
 
-		public void SetValue(string name, RuntimeValue value)
-		{
-			ExecutionContext.SetLocal(name, value);
-		}
+        public void ImportModule(Module module)
+        {
+            _rootContext.AddModule(module);
+        }
 
-		internal RuntimeValue CastObject(object obj)
-		{
-			RuntimeObject value = null;
-			if (obj is RuntimeValue)
-			{
-				return (RuntimeValue)obj;
-			}
-			else if (obj is RuntimeObject)
-			{
-				return new RuntimeValue(obj as RuntimeObject);
-			}
-			else if (obj is string)
-			{
-				value = new StringInstance(this, (string)obj);
-			}
-			else if (obj is int || obj is short || obj is sbyte || obj is long)
-			{
-				value = new IntegerInstance(this, (long)obj);
-			}
-			else if (obj is float || obj is double)
-			{
-				value = new FloatInstance(this, (double)obj);
-			}
-			else if (obj is bool)
-			{
-				value = new BooleanInstance(this, (bool)obj);
-			}
-			else
-			{
-				value = new ClrObjectInstance(this, obj);
-			}
+        public bool IsDefined(string name)
+        {
+            return ExecutionContext.IsDefined(name);
+        }
 
-			return new RuntimeValue(value);
-		}
+        public void SetValue(string name, object value)
+        {
+            RuntimeValue runtimeValue;
+            if (value == null)
+            {
+                runtimeValue = RuntimeValue.Null;
+            }
+            else if (value is Delegate)
+            {
+                runtimeValue = new RuntimeValue(new ExternalMethod(this, (Delegate)value));
+            }
+            else
+            {
+                runtimeValue = CastObject(value);
+            }
 
-		internal void CreateExecutionContext(RuntimeValue thisBinding)
-		{
-			_callStack.Push(new FunctionCallContext(this, thisBinding.Value));
-		}
+            ExecutionContext.SetLocal(name, runtimeValue);
+        }
 
-		internal LexicalEnvironment CreateLexicalEnvironment()
-		{
-			LexicalEnvironment environment;
-			if (ExecutionContext is FunctionCallContext)
-			{
-				environment = ((FunctionCallContext)ExecutionContext).PushScope();
-			}
-			else
-			{
-				environment = new LexicalEnvironment(ExecutionContext);
-				_callStack.Push(environment);
-			}
+        public void SetValue(string name, RuntimeValue value)
+        {
+            ExecutionContext.SetLocal(name, value);
+        }
 
-			return environment;
-		}
+        internal RuntimeValue CastObject(object obj)
+        {
+            RuntimeObject value = null;
+            if (obj is RuntimeValue)
+            {
+                return (RuntimeValue)obj;
+            }
+            else if (obj is RuntimeObject)
+            {
+                return new RuntimeValue(obj as RuntimeObject);
+            }
+            else if (obj is string)
+            {
+                value = new StringInstance(this, (string)obj);
+            }
+            else if (obj is int || obj is short || obj is sbyte || obj is long)
+            {
+                value = new IntegerInstance(this, (long)obj);
+            }
+            else if (obj is float || obj is double)
+            {
+                value = new FloatInstance(this, (double)obj);
+            }
+            else if (obj is bool)
+            {
+                value = new BooleanInstance(this, (bool)obj);
+            }
+            else
+            {
+                value = new ClrObjectInstance(this, obj);
+            }
 
-		internal ICallable FindLocalMethod(string name, TypeMetadata[] types)
-		{
-			var local = ExecutionContext.GetLocal(name).Value;
-			if (local != null && local is ICallable && (((ICallable)local)?.ArgumentsMatch(types) ?? false))
-			{
-				return (ICallable)local;
-			}
-			return _currentModule.FindMethod(name, types);
-		}
+            return new RuntimeValue(value);
+        }
 
-		internal TypeMetadata FindType(string name)
-		{
-			return _TypeRepository.FindType(name);
-		}
+        internal void CreateExecutionContext(RuntimeValue thisBinding)
+        {
+            _callStack.Push(new FunctionCallContext(this, thisBinding.Value));
+        }
 
-		internal TypeMetadata FindType(RuntimeValue value)
-		{
-			return FindType(value.TypeName);
-		}
+        internal LexicalEnvironment CreateLexicalEnvironment()
+        {
+            LexicalEnvironment environment;
+            if (ExecutionContext is FunctionCallContext)
+            {
+                environment = ((FunctionCallContext)ExecutionContext).PushScope();
+            }
+            else
+            {
+                environment = new LexicalEnvironment(ExecutionContext);
+                _callStack.Push(environment);
+            }
 
-		internal void PopExecutionContext()
-		{
-			_callStack.Pop();
-		}
+            return environment;
+        }
 
-		internal void PopLexicalEnvironment()
-		{
-			if (ExecutionContext is FunctionCallContext)
-			{
-				((FunctionCallContext)ExecutionContext).PopScope();
-			}
-			else
-			{
-				_callStack.Pop();
-			}
-		}
+        internal ICallable FindLocalMethod(string name, TypeMetadata[] types)
+        {
+            var local = ExecutionContext.GetLocal(name).Value;
+            if (local != null && local is ICallable && (((ICallable)local)?.ArgumentsMatch(types) ?? false))
+            {
+                return (ICallable)local;
+            }
+            return _currentModule.FindMethod(name, types);
+        }
 
-		internal TypeMetadata ResolveType(string name)
-		{
-			return _rootContext.FindType(name) ?? _TypeRepository.FindType(name);
-		}
+        internal TypeMetadata FindType(string name)
+        {
+            return _TypeRepository.FindType(name);
+        }
 
-		internal void SwitchContext(PineTreeEnvironment context)
-		{
-			_callStack.Push(context);
-		}
+        internal TypeMetadata FindType(RuntimeValue value)
+        {
+            return FindType(value.TypeName);
+        }
 
-		private Module CreateDynamicModule()
-		{
-			_currentModule = new Module(this);
-			return _currentModule;
-		}
-	}
+        internal void PopExecutionContext()
+        {
+            _callStack.Pop();
+        }
+
+        internal void PopLexicalEnvironment()
+        {
+            if (ExecutionContext is FunctionCallContext)
+            {
+                ((FunctionCallContext)ExecutionContext).PopScope();
+            }
+            else
+            {
+                _callStack.Pop();
+            }
+        }
+
+        internal TypeMetadata ResolveType(string name)
+        {
+            return _rootContext.FindType(name) ?? _TypeRepository.FindType(name);
+        }
+
+        internal void SwitchContext(PineTreeEnvironment context)
+        {
+            _callStack.Push(context);
+        }
+
+        private Module CreateDynamicModule()
+        {
+            _currentModule = new Module(this);
+            return _currentModule;
+        }
+    }
 }
