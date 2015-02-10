@@ -191,7 +191,7 @@ namespace PineTree.Interpreter
 			}
 			else if (obj is int || obj is short || obj is sbyte || obj is long)
 			{
-				value = new IntegerInstance(this, (int)obj);
+				value = new IntegerInstance(this, (long)obj);
 			}
 			else if (obj is float || obj is double)
 			{
