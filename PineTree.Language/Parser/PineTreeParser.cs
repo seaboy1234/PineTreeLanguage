@@ -306,6 +306,12 @@ namespace PineTree.Language.Parser
 			}
 			else
 			{
+				bool isStatic = false;
+				if (_current == "static")
+				{
+					isStatic = true;
+					AcceptToken();
+				}
 				string name;
 				string returnType;
 
@@ -321,7 +327,7 @@ namespace PineTree.Language.Parser
 				}
 				else if (_current == TokenType.OpenPara)
 				{
-					return ParseMethod(visibility, name, returnType);
+					return ParseMethod(visibility, name, returnType, isStatic);
 				}
 				else if (_current == TokenType.Assignment || _current == TokenType.Semicolon)
 				{
@@ -357,7 +363,7 @@ namespace PineTree.Language.Parser
 				string type, name;
 				ParseTypeAndName(out type, out name, "void");
 
-				node = ParseMethod(visibility, name, type);
+				node = ParseMethod(visibility, name, type, false);
 			}
 
 			return node;
@@ -500,7 +506,7 @@ namespace PineTree.Language.Parser
 			}
 		}
 
-		private SyntaxNode ParseMethod(Visibility visibility, string name, string type)
+		private SyntaxNode ParseMethod(Visibility visibility, string name, string type, bool isStatic)
 		{
 			if (type == "var")
 			{
@@ -531,7 +537,7 @@ namespace PineTree.Language.Parser
 
 			LexicalScope body = ParseLexicalScope();
 
-			return new MethodDeclaration(name, type, visibility, arguments, body, preconditions);
+			return new MethodDeclaration(name, type, isStatic, visibility, arguments, body, preconditions);
 		}
 
 		private Expression ParsePredicate()
@@ -558,14 +564,14 @@ namespace PineTree.Language.Parser
 				{
 					Take(_current.Type);
 					var body = ParseLexicalScope();
-					getMethod = new MethodDeclaration($"get_{name}", type, visibility, new VariableDeclaration[0], body);
+					getMethod = new MethodDeclaration($"get_{name}", type, false, visibility, new VariableDeclaration[0], body);
 					hasGet = true;
 				}
 				else if (_current == "set" && !hasSet)
 				{
 					Take(_current.Type);
 					var body = ParseLexicalScope();
-					setMethod = new MethodDeclaration($"set_{name}", type, visibility, new[] { new VariableDeclaration("value", type, null) }, body);
+					setMethod = new MethodDeclaration($"set_{name}", type, false, visibility, new[] { new VariableDeclaration("value", type, null) }, body);
 					hasSet = true;
 				}
 				else
