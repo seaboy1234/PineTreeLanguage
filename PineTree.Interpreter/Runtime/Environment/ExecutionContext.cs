@@ -32,7 +32,7 @@ namespace PineTree.Interpreter.Runtime.Environment
 
         public override RuntimeValue GetLocal(string name)
         {
-            return base.GetLocal(name).Or(() => _module.GetValue(name)).Or(() => GetFromImported(g => g.GetValue(name)));
+            return base.GetLocal(name).Or(() => _module.GetValue(name)).Or(() => new RuntimeValue(GetFromImported(name)));
         }
 
         public override ObjectReference GetReference(string name)
