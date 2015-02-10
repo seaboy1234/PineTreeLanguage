@@ -32,16 +32,7 @@ namespace PineTree.Interpreter.Runtime.Environment
 
         public override RuntimeValue GetLocal(string name)
         {
-            ICallable method = null;
-            if ((method = _module.FindMethod(name)) != null)
-            {
-                return new RuntimeValue(method as FunctionInstance);
-            }
-            else if ((method = GetFromImported(name) as ICallable) != null)
-            {
-                return new RuntimeValue(method as FunctionInstance);
-            }
-            return base.GetLocal(name);
+            return base.GetLocal(name).Or(() => _module.GetValue(name)).Or(() => GetFromImported(g => g.GetValue(name)));
         }
 
         public override ObjectReference GetReference(string name)

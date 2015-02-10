@@ -68,6 +68,15 @@ namespace PineTree.Interpreter.Runtime
             return this == Null;
         }
 
+        public RuntimeValue Or(Func<RuntimeValue> func)
+        {
+            if (Value == null)
+            {
+                return func();
+            }
+            return this;
+        }
+
         public override string ToString()
         {
             return Value?.ToString() ?? "null";
