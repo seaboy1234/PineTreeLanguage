@@ -30,6 +30,8 @@ namespace PineTree.Interpreter
         private ExecutionContext _rootContext;
         private StatementInterpreter _statementInterpreter;
 
+        public Module CurrentModule => _currentModule;
+
         public PineTreeEnvironment ExecutionContext => _callStack.Peek();
 
         public PineTreeEnvironment RootContext => _rootContext;

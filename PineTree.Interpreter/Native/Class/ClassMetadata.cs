@@ -17,6 +17,7 @@ namespace PineTree.Interpreter.Native.Class
         private List<FieldDeclaration> _fields;
         private List<FunctionInstance> _methods;
         private List<PropertyReference> _properties;
+        private List<FunctionInstance> _staticMethods;
 
         public override TypeInfo Info => TypeInfo.Object;
 
@@ -30,11 +31,16 @@ namespace PineTree.Interpreter.Native.Class
             _fields = new List<FieldDeclaration>();
             _methods = new List<FunctionInstance>();
             _properties = new List<PropertyReference>();
+
+            _staticMethods = new List<FunctionInstance>();
+
             _engine = engine;
 
             ImportClass(declaration);
             Name = declaration.Name;
             ParentType = declaration.Supertype;
+
+            engine.CurrentModule.BindObject(Name, CreateStaticObject(engine, null));
         }
 
         public override bool CanCastTo(TypeMetadata typeMetadata)
@@ -58,7 +64,7 @@ namespace PineTree.Interpreter.Native.Class
             {
                 (engine.ResolveType(ParentType) as ClassMetadata)?.ImportMembers(engine, instance);
             }
-			ImportMembers(engine, instance);
+            ImportMembers(engine, instance);
 
             var thisBinding = new RuntimeValue(instance);
 
@@ -102,6 +108,30 @@ namespace PineTree.Interpreter.Native.Class
             return instance;
         }
 
+        private RuntimeObject CreateStaticObject(PineTreeEngine engine, RuntimeObject instance)
+        {
+            if (instance == null)
+            {
+                instance = new ObjectInstance(engine, this);
+            }
+
+            if (ParentType != "object")
+            {
+                var type = engine.ResolveType(ParentType);
+                if (type is ClassMetadata)
+                {
+                    ((ClassMetadata)type).CreateStaticObject(engine, instance);
+                }
+            }
+
+            foreach (var method in _staticMethods)
+            {
+                instance.BindMethod(method.Name, method);
+            }
+
+            return instance;
+        }
+
         private void ImportClass(ClassDeclaration declaration)
         {
             foreach (var field in declaration.Fields)
@@ -122,7 +152,15 @@ namespace PineTree.Interpreter.Native.Class
             }
             foreach (var method in declaration.Methods)
             {
-                _methods.Add(new FunctionInstance(_engine, method));
+                var function = new FunctionInstance(_engine, method);
+                if (method.IsStatic)
+                {
+                    _staticMethods.Add(function);
+                }
+                else
+                {
+                    _methods.Add(function);
+                }
             }
         }
     }
