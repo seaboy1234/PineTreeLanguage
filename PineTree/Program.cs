@@ -33,6 +33,14 @@ namespace PineTree
             }
         }
 
+        private static void FindModule(object sender, ResolveModuleEventArgs e)
+        {
+            if (e.Name == "Math")
+            {
+                e.ResolvedModule = new MathModule((PineTreeEngine)sender);
+            }
+        }
+
         private static void GenerateXml(string path)
         {
             PineTreeDocumentGenerator gen = new PineTreeDocumentGenerator();
@@ -63,6 +71,8 @@ namespace PineTree
                 string contents = File.ReadAllText(file);
                 interpreter.Execute(contents);
             }
+
+            interpreter.ResolveSpecialModule += FindModule;
 
             interpreter.SetValue("console", new ScriptContext());
             interpreter.SetValue("type", new Func<RuntimeValue, string>(g => g.Value.TypeName));
