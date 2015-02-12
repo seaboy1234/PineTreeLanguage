@@ -47,7 +47,10 @@ namespace PineTree.Interpreter.Runtime.Environment
 
         internal void AddModule(Module module)
         {
-            _imported.Add(module);
+            if (!_imported.Any(g => g.Name == module.Name))
+            {
+                _imported.Add(module);
+            }
         }
 
         internal TypeMetadata FindType(string name)

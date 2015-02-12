@@ -13,17 +13,20 @@ namespace PineTree.Interpreter
     {
         private TypeRepository _types;
 
+        public string Name { get; }
+
         public override TypeInfo TypeInfo => TypeInfo.Object;
 
-        public Module(PineTreeEngine engine)
+        public Module(PineTreeEngine engine, string name)
             : base(engine)
         {
             _types = new TypeRepository();
+            Name = name;
         }
 
-        public static Module CreateSpecial(PineTreeEngine engine, IDictionary<string, object> contents)
+        public static Module CreateSpecial(PineTreeEngine engine, string name, IDictionary<string, object> contents)
         {
-            var module = new Module(engine);
+            var module = new Module(engine, name);
 
             foreach (var item in contents)
             {

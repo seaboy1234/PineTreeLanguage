@@ -300,7 +300,12 @@ namespace PineTree.Interpreter
 
         private Module CreateDynamicModule()
         {
-            _currentModule = new Module(this);
+            return CreateNamedModule("Script");
+        }
+
+        private Module CreateNamedModule(string name)
+        {
+            _currentModule = new Module(this, name);
             return _currentModule;
         }
     }

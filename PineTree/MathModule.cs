@@ -17,7 +17,7 @@ namespace PineTree
             }
         }
 
-        public MathModule(PineTreeEngine engine) : base(engine)
+        public MathModule(PineTreeEngine engine) : base(engine, "Math")
         {
             BindObject("Math", new MathObject());
         }
