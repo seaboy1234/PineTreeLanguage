@@ -17,6 +17,7 @@ namespace PineTree.Interpreter.Native.Function
         private readonly MethodDeclaration _methodInfo;
         private string _alias;
         private Lazy<List<TypeMetadata>> _argumentsList;
+        private ICallable _preconditions;
 
         public MethodDeclaration Declaration => _methodInfo;
 
@@ -42,6 +43,11 @@ namespace PineTree.Interpreter.Native.Function
 
                 return list;
             });
+
+            if (_methodInfo.Preconditions != null)
+            {
+                _preconditions = new PreconditionMethod(engine, this, _methodInfo.Preconditions);
+            }
         }
 
         public bool ArgumentsMatch(TypeMetadata[] types)
@@ -60,21 +66,7 @@ namespace PineTree.Interpreter.Native.Function
                     Engine.ExecutionContext.SetLocal(arg.Name, arg.Type.CreateInstance(Engine, new[] { arg.Value }));
                 }
 
-                if (_methodInfo.Preconditions != null)
-                {
-                    foreach (var condition in _methodInfo.Preconditions)
-                    {
-                        var output = Engine.Evaluate(condition.Condition);
-                        if (!(output.Value.Value is BooleanInstance))
-                        {
-                            throw new RuntimeException("Preconditions must return a boolean.");
-                        }
-                        if (!((bool)output.Value.ToClr()))
-                        {
-                            throw new RuntimeException(condition.ErrorMessage);
-                        }
-                    }
-                }
+                _preconditions?.Invoke(thisBinding, args);
 
                 var obj = Engine.Evaluate(_methodInfo.Body);
 

@@ -60,6 +60,7 @@
     <Compile Include="Native\Function\FunctionType.cs" />
     <Compile Include="Native\Function\LambdaInstance.cs" />
     <Compile Include="Native\Function\LamdaArgumentType.cs" />
+    <Compile Include="Native\Function\PreconditionMethod.cs" />
     <Compile Include="Native\ICallable.cs" />
     <Compile Include="Native\Integer\IntegerInstance.cs" />
     <Compile Include="Native\Integer\IntegerType.cs" />
