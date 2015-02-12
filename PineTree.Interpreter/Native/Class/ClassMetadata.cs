@@ -40,7 +40,7 @@ namespace PineTree.Interpreter.Native.Class
             Name = declaration.Name;
             ParentType = declaration.Supertype;
 
-            engine.CurrentModule.BindObject(Name, CreateStaticObject(engine, null));
+            engine.CurrentModule.BindReadonlyProperty(Name, CreateStaticObject(engine, null));
         }
 
         public override bool CanCastTo(TypeMetadata typeMetadata)

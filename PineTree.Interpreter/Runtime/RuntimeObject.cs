@@ -91,6 +91,11 @@ namespace PineTree.Interpreter.Runtime
             BindProperty(new PropertyReference(name, getMethod, setMethod));
         }
 
+        public void BindReadonlyProperty<T>(string name, T value)
+        {
+            BindProperty(name, new ExternalMethod(Engine, new Func<T>(() => value)));
+        }
+
         public virtual RuntimeValue EvaluateArithmetic(RuntimeValue right, ArithmeticOperator op)
         {
             return RuntimeValue.Null;

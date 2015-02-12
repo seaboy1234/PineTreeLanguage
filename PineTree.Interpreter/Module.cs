@@ -30,15 +30,10 @@ namespace PineTree.Interpreter
 
             foreach (var item in contents)
             {
-                module.BindObject(item.Key, item.Value);
+                module.BindReadonlyProperty(item.Key, item.Value);
             }
 
             return module;
-        }
-
-        public void BindObject<T>(string name, T value)
-        {
-            BindProperty(name, new ExternalMethod(Engine, new Func<T>(() => value)));
         }
 
         public void DefineType(TypeMetadata type)

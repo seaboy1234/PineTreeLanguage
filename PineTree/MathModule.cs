@@ -19,7 +19,7 @@ namespace PineTree
 
         public MathModule(PineTreeEngine engine) : base(engine, "Math")
         {
-            BindObject("Math", new MathObject());
+            BindReadonlyProperty("Math", new MathObject());
         }
     }
 }
